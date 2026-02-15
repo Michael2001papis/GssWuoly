@@ -26,6 +26,7 @@
     <span id="appClock"></span>
     <div class="app-topbar-actions">
       <a href="../../home/index.html" class="app-icon-btn back-btn-mini" aria-label="חזרה">←</a>
+      <button type="button" class="app-icon-btn avatar-btn-mini" id="avatarBtn" title="בחר אווטאר" aria-label="בחר אווטאר">👤</button>
       <button type="button" class="app-icon-btn" id="muteBtn" title="השתק/הפעל סאונד" aria-label="סאונד">🔊</button>
       <button type="button" class="app-icon-btn" id="themeBtn" title="מצב בהיר/כהה" aria-label="החלף תאורה">🌙</button>
       <button type="button" class="app-icon-btn" id="settingsBtn" title="הגדרות" aria-label="הגדרות">⚙</button>
@@ -105,6 +106,22 @@
     </section>
     
   </div>
+  <div id="avatarModal" class="accessibility-modal">
+    <div class="accessibility-content">
+      <h3>בחר אווטאר</h3>
+      <div class="avatar-picker" id="avatarPicker">
+        <button type="button" class="avatar-opt" data-emoji="👤">👤</button>
+        <button type="button" class="avatar-opt" data-emoji="😊">😊</button>
+        <button type="button" class="avatar-opt" data-emoji="😎">😎</button>
+        <button type="button" class="avatar-opt" data-emoji="🎮">🎮</button>
+        <button type="button" class="avatar-opt" data-emoji="⭐">⭐</button>
+        <button type="button" class="avatar-opt" data-emoji="🐍">🐍</button>
+        <button type="button" class="avatar-opt" data-emoji="⭕">⭕</button>
+        <button type="button" class="avatar-opt" data-emoji="🚀">🚀</button>
+      </div>
+      <button type="button" class="btn-close-modal" onclick="document.getElementById('avatarModal').classList.remove('active')">סגור</button>
+    </div>
+  </div>
   <div id="tipsOverlay" class="tips-overlay" role="dialog" aria-labelledby="tipsTitle" aria-modal="true">
     <div class="tips-content">
       <h2 id="tipsTitle">איך משחקים איקס עיגול?</h2>
@@ -148,6 +165,26 @@
       var nameInput = document.getElementById("playerXName");
       if (nameInput) nameInput.value = user.name;
       if (badge) { badge.textContent = "שלום, " + user.name + "!"; badge.style.display = "block"; }
+      var avatarBtn = document.getElementById("avatarBtn");
+      if (avatarBtn && typeof AUTH !== "undefined") {
+        avatarBtn.textContent = user.avatar || "👤";
+        avatarBtn.addEventListener("click", function() {
+          var m = document.getElementById("avatarModal");
+          if (m) m.classList.add("active");
+        });
+      }
+      document.querySelectorAll("#avatarPicker .avatar-opt").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          var em = this.getAttribute("data-emoji");
+          if (typeof AUTH !== "undefined" && em) {
+            AUTH.updateAvatar(em);
+            var ab = document.getElementById("avatarBtn");
+            if (ab) ab.textContent = em;
+          }
+          var m = document.getElementById("avatarModal");
+          if (m) m.classList.remove("active");
+        });
+      });
       if (typeof APP !== "undefined") { APP.init(); APP.updateActivity(); }
       var muteBtn = document.getElementById("muteBtn");
       if (muteBtn) {

@@ -2,15 +2,6 @@ document.addEventListener("DOMContentLoaded", function() {
   if (typeof APP !== "undefined") {
     APP.init();
     APP.updateActivity();
-    document.getElementById("themeBtn")?.addEventListener("click", function() {
-      const theme = APP.getTheme() === "dark" ? "light" : "dark";
-      APP.setTheme(theme);
-      this.textContent = theme === "dark" ? "🌙" : "☀️";
-    });
-    if (APP.getTheme() === "light") {
-      const tb = document.getElementById("themeBtn");
-      if (tb) tb.textContent = "☀️";
-    }
     document.getElementById("settingsBtn")?.addEventListener("click", function() {
       document.getElementById("accessibilityModal")?.classList.toggle("active");
     });

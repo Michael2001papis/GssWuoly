@@ -47,14 +47,16 @@
 
   function initThemeAndA11y() {
     applyTheme();
-    var themeBtn = document.getElementById("themeBtn");
-    if (themeBtn) {
-      themeBtn.addEventListener("click", function() {
-        var t = getTheme() === "dark" ? "light" : "dark";
-        setTheme(t);
-        this.textContent = t === "dark" ? "🌙" : "☀️";
-      });
-      if (getTheme() === "light") themeBtn.textContent = "☀️";
+    if (typeof APP === "undefined" || !APP.initThemeBtn) {
+      var themeBtn = document.getElementById("themeBtn");
+      if (themeBtn) {
+        themeBtn.addEventListener("click", function() {
+          var t = getTheme() === "dark" ? "light" : "dark";
+          setTheme(t);
+          this.textContent = t === "dark" ? "🌙" : "☀️";
+        });
+        if (getTheme() === "light") themeBtn.textContent = "☀️";
+      }
     }
 
     var modal = document.getElementById("accessibilityModal");

@@ -6,6 +6,7 @@ const APP = {
 
   init() {
     this.applyTheme();
+    this.initThemeBtn();
     this.applyAccessibility();
     this.initClock();
     this.touchToInitAudio();
@@ -134,6 +135,25 @@ const APP = {
     document.documentElement.classList.toggle("theme-light", theme === "light");
     document.documentElement.classList.toggle("theme-dark", theme === "dark");
     if (typeof SOUNDS !== "undefined") SOUNDS.init();
+    this.updateThemeBtnIcon();
+  },
+
+  initThemeBtn() {
+    const btn = document.getElementById("themeBtn");
+    if (!btn) return;
+    this.updateThemeBtnIcon();
+    btn.addEventListener("click", () => {
+      const next = this.getTheme() === "dark" ? "light" : "dark";
+      this.setTheme(next);
+    });
+  },
+
+  updateThemeBtnIcon() {
+    const btn = document.getElementById("themeBtn");
+    if (!btn) return;
+    btn.textContent = this.getTheme() === "light" ? "☀️" : "🌙";
+    btn.title = this.getTheme() === "light" ? "מצב בהיר (לחץ למעבר לכהה)" : "מצב כהה (לחץ למעבר לבהיר)";
+    btn.setAttribute("aria-label", this.getTheme() === "light" ? "מצב בהיר – החלף לכהה" : "מצב כהה – החלף לבהיר");
   },
 
   initClock() {
