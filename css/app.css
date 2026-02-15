@@ -36,6 +36,13 @@
 .theme-light .subtitle {
   color: var(--app-muted) !important;
 }
+.theme-light .container h1,
+.theme-light header h1 {
+  background: linear-gradient(135deg, #0f172a 0%, #64748b 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
 
 .theme-light html,
 .theme-light body {
@@ -446,4 +453,158 @@
 }
 .a11y-reduce-motion .main-content {
   animation: none;
+}
+
+/* === מצב בהיר – התאמה לכל הדפים === */
+.theme-light html,
+.theme-light body {
+  background: var(--app-bg) !important;
+  color: var(--app-text) !important;
+}
+.theme-light .page {
+  color: var(--app-text) !important;
+}
+.theme-light .page p {
+  color: var(--app-muted) !important;
+}
+.theme-light .tips-overlay {
+  background: rgba(0,0,0,0.5) !important;
+}
+.theme-light .tips-content,
+.theme-light .accessibility-content,
+.theme-light .modal-content {
+  background: #ffffff !important;
+  color: var(--app-text) !important;
+  border: 1px solid var(--app-border) !important;
+}
+.theme-light .modal {
+  background: rgba(0,0,0,0.4) !important;
+}
+.theme-light .modal-content h2,
+.theme-light .modal-content p {
+  color: var(--app-text) !important;
+}
+.theme-light .modal-content input {
+  background: #fff !important;
+  border-color: var(--app-border) !important;
+  color: var(--app-text) !important;
+}
+.theme-light .modal-close {
+  background: rgba(0,0,0,0.06) !important;
+  color: var(--app-text) !important;
+}
+.theme-light .modal-close:hover {
+  background: rgba(0,0,0,0.1) !important;
+}
+.theme-light .social-icons .icons {
+  border-color: var(--app-border) !important;
+  color: var(--app-text) !important;
+}
+.theme-light .form-hint,
+.theme-light .form-panel .forgot {
+  color: var(--app-muted) !important;
+}
+.theme-light .form-panel .forgot:hover {
+  color: #4f46e5 !important;
+}
+.theme-light .tips-content h2,
+.theme-light .accessibility-content h3,
+.theme-light .accessibility-content h4 {
+  color: var(--app-text) !important;
+}
+.theme-light .tips-content p,
+.theme-light .accessibility-content label {
+  color: var(--app-text) !important;
+}
+.theme-light .login-box {
+  background: linear-gradient(165deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 100%) !important;
+  border-color: var(--app-border) !important;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.1) !important;
+}
+.theme-light .form-panel h1 {
+  color: var(--app-text) !important;
+}
+.theme-light .form-panel .subtitle,
+.theme-light .form-panel span {
+  color: var(--app-muted) !important;
+}
+.theme-light .form-panel input {
+  background: #fff !important;
+  border-color: var(--app-border) !important;
+  color: var(--app-text) !important;
+}
+.theme-light .tab-buttons {
+  background: rgba(0,0,0,0.06) !important;
+}
+.theme-light .tab-btn {
+  color: var(--app-muted) !important;
+}
+.theme-light .tab-btn.active,
+.theme-light .tab-btn:hover {
+  color: var(--app-text) !important;
+}
+.theme-light .tictactoe,
+.theme-light .game-container {
+  background: transparent !important;
+}
+.theme-light .tictactoe .btn {
+  background: rgba(0,0,0,0.06) !important;
+  border-color: var(--app-border) !important;
+}
+.theme-light .snake-container h1,
+.theme-light .game-container h1 {
+  color: var(--app-text) !important;
+}
+.theme-light .game-stats,
+.theme-light .shortcuts-hint {
+  color: var(--app-muted) !important;
+}
+.theme-light #playerNames label,
+.theme-light #modeSelector label {
+  color: #b45309 !important;
+}
+.theme-light #playerNames,
+.theme-light #scoreboard,
+.theme-light #modeSelector,
+.theme-light #victoryTable {
+  background: rgba(0,0,0,0.04) !important;
+  border-color: var(--app-border) !important;
+}
+.theme-light #playerNames input,
+.theme-light #modeSelector select {
+  background: #fff !important;
+  border-color: var(--app-border) !important;
+  color: var(--app-text) !important;
+}
+.theme-light .start-overlay .overlay-inner {
+  background: #fff !important;
+  color: var(--app-text) !important;
+  border: 1px solid var(--app-border) !important;
+}
+.theme-light #leaderboardBox {
+  background: rgba(0,0,0,0.04) !important;
+  border-color: var(--app-border) !important;
+}
+.theme-light #leaderboardBox h2 {
+  color: var(--app-text) !important;
+}
+.theme-light .btn-close-modal {
+  background: rgba(0,0,0,0.06) !important;
+  border-color: var(--app-border) !important;
+  color: var(--app-text) !important;
+}
+.theme-light .err-page .err-msg {
+  color: var(--app-muted) !important;
+}
+.theme-light .err-links a {
+  background: rgba(0,0,0,0.06) !important;
+  color: var(--app-text) !important;
+  border-color: var(--app-border) !important;
+}
+.theme-light .back {
+  background: rgba(0,0,0,0.08) !important;
+  color: var(--app-text) !important;
+}
+.theme-light .back:hover {
+  background: rgba(0,0,0,0.12) !important;
 }
