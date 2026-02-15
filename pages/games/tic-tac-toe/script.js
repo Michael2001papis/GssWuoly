@@ -26,27 +26,26 @@ const scoreODisplay = document.getElementById("scoreODisplay");
 
 // מאזינים ללחיצות
 btns.forEach(btn => {
-  btn.addEventListener("click", () => {
+  if (btn) btn.addEventListener("click", () => {
     if (!gameActive) return;
     handleClick(btn);
   });
 });
 
-resetBtn.addEventListener("click", resetGame);
-stopBtn.addEventListener("click", stopGame);
-victoryTableBtn.addEventListener("click", toggleVictoryTable);
+if (resetBtn) resetBtn.addEventListener("click", resetGame);
+if (stopBtn) stopBtn.addEventListener("click", stopGame);
+if (victoryTableBtn) victoryTableBtn.addEventListener("click", toggleVictoryTable);
 
 // הצגת/הסתרת רמת קושי לפי מצב משחק
-gameModeSelect.addEventListener("change", () => {
+if (gameModeSelect) gameModeSelect.addEventListener("change", () => {
   if (gameModeSelect.value === "pvc") {
-    playerONameInput.value = "מחשב";
-    playerONameInput.disabled = true;
-    aiLevelLabel.classList.remove("hidden");
-    aiLevelSelect.classList.remove("hidden");
+    if (playerONameInput) { playerONameInput.value = "מחשב"; playerONameInput.disabled = true; }
+    if (aiLevelLabel) aiLevelLabel.classList.remove("hidden");
+    if (aiLevelSelect) aiLevelSelect.classList.remove("hidden");
   } else {
-    playerONameInput.disabled = false;
-    aiLevelLabel.classList.add("hidden");
-    aiLevelSelect.classList.add("hidden");
+    if (playerONameInput) { playerONameInput.disabled = false; }
+    if (aiLevelLabel) aiLevelLabel.classList.add("hidden");
+    if (aiLevelSelect) aiLevelSelect.classList.add("hidden");
   }
 });
 
@@ -96,13 +95,14 @@ function showConfetti() {
 }
 
 function updateVictoryTable() {
-  playerXDisplayName.textContent = playerXNameInput.value || "שחקן X";
-  playerODisplayName.textContent = playerONameInput.value || "שחקן O";
-  scoreXDisplay.textContent = score.X;
-  scoreODisplay.textContent = score.O;
+  if (playerXDisplayName) playerXDisplayName.textContent = (playerXNameInput && playerXNameInput.value) || "שחקן X";
+  if (playerODisplayName) playerODisplayName.textContent = (playerONameInput && playerONameInput.value) || "שחקן O";
+  if (scoreXDisplay) scoreXDisplay.textContent = score.X;
+  if (scoreODisplay) scoreODisplay.textContent = score.O;
 }
 
 function setCell(btn, value) {
+  if (!btn) return;
   btn.textContent = "";
   btn.classList.remove("x", "o", "filled");
   btn.classList.add("filled");
@@ -215,7 +215,8 @@ function computerMove() {
     move = getBestMove();
   }
 
-  const btn = document.querySelector(`.btn[data-index="${move}"]`);
+  var btn = document.querySelector(".btn[data-index=\"" + move + "\"]");
+  if (!btn) return;
   board[move] = "O";
   setCell(btn, "O");
   btnClicked++;
@@ -291,9 +292,9 @@ function highlightWin(posArray) {
 function updateScore(winner) {
   if (winner === "X") score.X++;
   if (winner === "O") score.O++;
-  scoreXEl.textContent = "X: " + score.X;
-  scoreOEl.textContent = "O: " + score.O;
-  scoreTieEl.textContent = "תיקו: " + score.Tie;
+  if (scoreXEl) scoreXEl.textContent = "X: " + score.X;
+  if (scoreOEl) scoreOEl.textContent = "O: " + score.O;
+  if (scoreTieEl) scoreTieEl.textContent = "תיקו: " + score.Tie;
 }
 
 function resetBoard() {
@@ -325,7 +326,7 @@ function stopGame() {
 }
 
 function toggleVictoryTable() {
-  victoryTable.classList.toggle("hidden");
+  if (victoryTable) victoryTable.classList.toggle("hidden");
 }
 
 function showMessage(msg, type = "success") {

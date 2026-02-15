@@ -88,13 +88,16 @@ const APP = {
     root.classList.toggle("a11y-reduce-motion", !!opts.reduceMotion);
     root.classList.toggle("a11y-focus-visible", !!opts.focusVisible);
     root.classList.toggle("a11y-spacing", !!opts.spacing);
+    root.classList.toggle("a11y-large-cursor", !!opts.largeCursor);
+    root.classList.toggle("a11y-underline-links", !!opts.underlineLinks);
+    root.classList.toggle("a11y-dyslexia", !!opts.dyslexiaFont);
   },
 
   initAccessibilityModal() {
     var modal = document.getElementById("accessibilityModal");
     if (!modal) return;
     var opts = this.getAccessibility();
-    var map = { optBigText: "bigText", optHighContrast: "highContrast", optReduceMotion: "reduceMotion", optFocusVisible: "focusVisible", optSpacing: "spacing" };
+    var map = { optBigText: "bigText", optHighContrast: "highContrast", optReduceMotion: "reduceMotion", optFocusVisible: "focusVisible", optSpacing: "spacing", optLargeCursor: "largeCursor", optUnderlineLinks: "underlineLinks", optDyslexiaFont: "dyslexiaFont" };
     for (var id in map) {
       var el = document.getElementById(id);
       if (el) el.checked = !!opts[map[id]];

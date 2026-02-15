@@ -217,8 +217,14 @@
 }
 
 .accessibility-content h3 {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   font-size: 1.25rem;
+}
+.accessibility-content .a11y-intro {
+  font-size: 0.9rem;
+  color: var(--app-muted);
+  margin-bottom: 1rem;
+  line-height: 1.5;
 }
 
 .accessibility-content label {
@@ -313,6 +319,28 @@
 .a11y-spacing button,
 .a11y-spacing .app-icon-btn {
   padding: 0.9rem 1.25rem !important;
+}
+
+/* נגישות מורחבת – תמיכה מלאה */
+.a11y-large-cursor,
+.a11y-large-cursor * {
+  cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><circle cx="16" cy="16" r="14" fill="black" stroke="white" stroke-width="2"/></svg>') 16 16, auto !important;
+}
+
+.a11y-underline-links a {
+  text-decoration: underline !important;
+  text-underline-offset: 0.2em;
+}
+
+.a11y-dyslexia {
+  font-family: 'Comic Sans MS', 'Chalkboard', 'Comic Neue', sans-serif !important;
+}
+
+.a11y-dyslexia body,
+.a11y-dyslexia .game-card,
+.a11y-dyslexia .form-panel,
+.a11y-dyslexia h1, .a11y-dyslexia h2, .a11y-dyslexia h3 {
+  font-family: inherit !important;
 }
 
 /* Toast */
