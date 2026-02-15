@@ -13,8 +13,34 @@
   let gameInterval, timerInterval;
   let gameSpeed = 85;
   let obstacles = [];
+  const SAVE_KEY = "gameHubSnakeState";
 
   function getEl(id) { return document.getElementById(id); }
+
+  function saveGameState() {
+    if (!isRunning || gameOver) return;
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        snake: snake, direction: direction, fruit: fruit, score: score, gameTime: gameTime,
+        gameSpeed: gameSpeed, obstacles: obstacles, ts: Date.now()
+      }));
+    } catch (e) {}
+  }
+
+  function loadGameState() {
+    try {
+      var raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return null;
+      var s = JSON.parse(raw);
+      if (!s || !s.snake || !Array.isArray(s.snake) || s.snake.length < 1) return null;
+      if (Date.now() - (s.ts || 0) > 24 * 60 * 60 * 1000) return null;
+      return s;
+    } catch (e) { return null; }
+  }
+
+  function clearSavedState() {
+    try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  }
 
   function getSpeed() {
     const sel = getEl("speedSelect");
@@ -23,19 +49,35 @@
     return (v === 120 || v === 85 || v === 55) ? v : 85;
   }
 
-  function initGame() {
-    gameSpeed = getSpeed();
+  function initGame(fromSave) {
+    if (fromSave) {
+      var saved = loadGameState();
+      if (saved) {
+        snake = saved.snake;
+        direction = saved.direction;
+        fruit = saved.fruit;
+        score = saved.score || 0;
+        gameTime = saved.gameTime || 0;
+        gameSpeed = saved.gameSpeed || getSpeed();
+        obstacles = Array.isArray(saved.obstacles) ? saved.obstacles : spawnObstacles(5);
+      } else {
+        fromSave = false;
+      }
+    }
+    if (!fromSave) {
+      gameSpeed = getSpeed();
+      snake = [{ x: 200, y: 200 }];
+      direction = "RIGHT";
+      fruit = spawnFruit();
+      score = 0;
+      gameTime = 0;
+      obstacles = spawnObstacles(5);
+    }
+    gameOver = false;
+    isPaused = false;
+
     const sel = getEl("speedSelect");
     if (sel) sel.disabled = true;
-
-    snake = [{ x: 200, y: 200 }];
-    direction = "RIGHT";
-    fruit = spawnFruit();
-    gameOver = false;
-    score = 0;
-    gameTime = 0;
-    isPaused = false;
-    obstacles = spawnObstacles(5);
 
     clearInterval(gameInterval);
     clearInterval(timerInterval);
@@ -47,6 +89,7 @@
     }, 1000);
 
     isRunning = true;
+    clearSavedState();
     hideStartOverlay();
     updateBtns("running");
   }
@@ -56,6 +99,8 @@
     clearInterval(timerInterval);
     isRunning = false;
     isPaused = !ended;
+
+    if (!ended) saveGameState();
 
     const overlay = getEl("startOverlay");
     if (overlay) overlay.classList.remove("hidden");
@@ -69,6 +114,7 @@
       if (desc) desc.textContent = "לחץ התחל למשחק חדש";
       if (btnOvl) btnOvl.innerHTML = '<span>↻</span> התחל מחדש';
       saveToLeaderboard();
+      clearSavedState();
     } else {
       if (title) title.textContent = "המשחק הוקפא";
       if (desc) desc.textContent = "לחץ התחל להמשך";
@@ -98,7 +144,8 @@
     clearInterval(timerInterval);
     isRunning = false;
     isPaused = false;
-    initGame();
+    clearSavedState();
+    initGame(false);
   }
 
   function hideStartOverlay() {
@@ -268,7 +315,10 @@
 
   function doStart() {
     if (isPaused) resumeGame();
-    else if (!isRunning) initGame();
+    else if (!isRunning) {
+      var saved = loadGameState();
+      initGame(!!saved);
+    }
   }
 
   function doStop() {
@@ -292,6 +342,9 @@
   }
 
   function boot() {
+    window.addEventListener("beforeunload", function() {
+      if (isRunning && !isPaused && !gameOver) saveGameState();
+    });
     canvas = getEl("gameCanvas");
     if (!canvas) return;
     ctx = canvas.getContext("2d");
@@ -338,6 +391,17 @@
     });
 
     renderLeaderboard(getLeaderboard());
+
+    var saved = loadGameState();
+    var btnOvl = getEl("btnStartOverlay");
+    var ov = getEl("startOverlay");
+    var overlayTitle = getEl("overlayTitle");
+    var overlayDesc = ov ? ov.querySelector(".overlay-desc") : null;
+    if (saved && btnOvl) {
+      btnOvl.innerHTML = '<span>▶</span> המשך משחק';
+      if (overlayTitle) overlayTitle.textContent = "משחק שמור";
+      if (overlayDesc) overlayDesc.textContent = "לחץ להמשך המשחק הקודם (ניקוד: " + (saved.score || 0) + ")";
+    }
   }
 
   if (document.readyState === "loading") {

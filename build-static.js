@@ -31,6 +31,8 @@ fs.mkdirSync(dist, { recursive: true });
 
 copyFile(path.join(root, 'index.html'), path.join(dist, 'index.html'));
 if (fs.existsSync(path.join(root, 'sitemap.xml'))) copyFile(path.join(root, 'sitemap.xml'), path.join(dist, 'sitemap.xml'));
+if (fs.existsSync(path.join(root, 'manifest.json'))) copyFile(path.join(root, 'manifest.json'), path.join(dist, 'manifest.json'));
+if (fs.existsSync(path.join(root, 'sw.js'))) copyFile(path.join(root, 'sw.js'), path.join(dist, 'sw.js'));
 copyDir(path.join(root, 'js'), path.join(dist, 'js'));
 copyDir(path.join(root, 'css'), path.join(dist, 'css'));
 copyDir(path.join(root, 'assets'), path.join(dist, 'assets'));

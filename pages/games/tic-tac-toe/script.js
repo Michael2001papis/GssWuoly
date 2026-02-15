@@ -50,6 +50,60 @@ if (gameModeSelect) gameModeSelect.addEventListener("change", () => {
 });
 
 const GAME_HISTORY_KEY = "tttGameHistory";
+const SAVE_STATE_KEY = "gameHubTttState";
+
+function saveGameState() {
+  if (!gameActive && btnClicked === 0) return;
+  try {
+    var data = {
+      board: board.slice(),
+      turn: turn,
+      score: { X: score.X, O: score.O, Tie: score.Tie },
+      btnClicked: btnClicked,
+      gameMode: gameModeSelect ? gameModeSelect.value : "pvc",
+      aiLevel: aiLevelSelect ? aiLevelSelect.value : "hard",
+      playerX: playerXNameInput ? playerXNameInput.value : "",
+      playerO: playerONameInput ? playerONameInput.value : "",
+      ts: Date.now()
+    };
+    localStorage.setItem(SAVE_STATE_KEY, JSON.stringify(data));
+  } catch (e) {}
+}
+
+function loadGameState() {
+  try {
+    var raw = localStorage.getItem(SAVE_STATE_KEY);
+    if (!raw) return null;
+    var s = JSON.parse(raw);
+    if (!s || !Array.isArray(s.board) || s.board.length !== 9) return null;
+    if (Date.now() - (s.ts || 0) > 24 * 60 * 60 * 1000) return null;
+    return s;
+  } catch (e) { return null; }
+}
+
+function clearSavedState() {
+  try { localStorage.removeItem(SAVE_STATE_KEY); } catch (e) {}
+}
+
+function restoreBoardFromState(s) {
+  board = s.board.slice();
+  turn = s.turn;
+  score = { X: s.score.X || 0, O: s.score.O || 0, Tie: s.score.Tie || 0 };
+  btnClicked = s.btnClicked || 0;
+  gameActive = true;
+  btns.forEach(function(btn, i) {
+    var v = board[i];
+    if (v) setCell(btn, v); else { btn.textContent = ""; btn.classList.remove("win", "x", "o", "filled"); }
+  });
+  updateScore();
+  updateVictoryTable();
+  if (gameModeSelect) gameModeSelect.value = s.gameMode || "pvc";
+  if (aiLevelSelect) aiLevelSelect.value = s.aiLevel || "hard";
+  if (playerXNameInput) playerXNameInput.value = s.playerX || "";
+  if (playerONameInput) { playerONameInput.value = s.playerO || "מחשב"; playerONameInput.disabled = s.gameMode === "pvc"; }
+  if (aiLevelLabel) aiLevelLabel.classList.toggle("hidden", s.gameMode !== "pvc");
+  if (aiLevelSelect) aiLevelSelect.classList.toggle("hidden", s.gameMode !== "pvc");
+}
 
 function getGameHistory() {
   try {
@@ -306,6 +360,7 @@ function resetBoard() {
     btn.classList.remove("win", "x", "o", "filled");
   });
   gameActive = true;
+  clearSavedState();
 }
 
 function resetGame() {
@@ -318,10 +373,19 @@ function resetGame() {
 
 document.addEventListener("DOMContentLoaded", function() {
   updateGameStats();
+  var saved = loadGameState();
+  if (saved) {
+    restoreBoardFromState(saved);
+    showMessage("המשך משחק שמור", "info");
+  }
+  window.addEventListener("beforeunload", function() {
+    if (gameActive && btnClicked > 0) saveGameState();
+  });
 });
 
 function stopGame() {
   gameActive = false;
+  saveGameState();
   showMessage("המשחק נעצר!", "info");
 }
 

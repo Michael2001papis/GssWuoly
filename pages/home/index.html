@@ -30,6 +30,7 @@
   <meta property="og:locale" content="he_IL">
   <title>Game Hub | בחירת משחק</title>
   <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+  <link rel="manifest" href="../../manifest.json">
   <link rel="stylesheet" href="../../css/app.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,6 +71,12 @@
     .user-greeting { font-size: 1.2rem; color: #4ade80; font-weight: 600; margin-top: 0.25rem; }
     .logout-btn { display: inline-flex; align-items: center; justify-content: center; margin-top: 0.5rem; min-height: 44px; min-width: 44px; padding: 0.5rem 1.25rem; font-size: 0.9rem; background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.4); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; font-family: inherit; font-weight: 600; }
     .logout-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(239,68,68,0.5); }
+    .user-area { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
+    .avatar-btn { width: 48px; height: 48px; border-radius: 50%; font-size: 1.8rem; background: rgba(99,102,241,0.3); border: 2px solid rgba(99,102,241,0.6); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; line-height: 1; }
+    .avatar-btn:hover { background: rgba(99,102,241,0.5); transform: scale(1.05); }
+    .avatar-picker { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+    .avatar-opt { width: 44px; height: 44px; font-size: 1.5rem; border-radius: 50%; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.2); cursor: pointer; transition: all 0.2s; }
+    .avatar-opt:hover { background: rgba(99,102,241,0.4); border-color: rgba(99,102,241,0.8); }
     .logout-btn:hover { background: rgba(239,68,68,0.4); color: #fff; transform: scale(1.05); }
     .logout-btn:active { transform: scale(0.98); }
     .game-card.locked { position: relative; }
@@ -81,6 +88,7 @@
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
   </style>
   <script src="../../js/auth.js"></script>
+  <script src="../../js/analytics.js"></script>
   <script src="../../js/sounds.js"></script>
   <script src="../../js/toast.js"></script>
   <script src="../../js/standalone.js"></script>
@@ -93,6 +101,22 @@
     <div class="app-topbar-actions">
       <button type="button" class="app-icon-btn" id="themeBtn" title="מצב בהיר/כהה" aria-label="החלף מצב תאורה">🌙</button>
       <button type="button" class="app-icon-btn" id="settingsBtn" title="הגדרות נגישות" aria-label="הגדרות נגישות">⚙</button>
+    </div>
+  </div>
+  <div id="avatarModal" class="accessibility-modal">
+    <div class="accessibility-content">
+      <h3>בחר אווטאר</h3>
+      <div class="avatar-picker" id="avatarPicker">
+        <button type="button" class="avatar-opt" data-emoji="👤">👤</button>
+        <button type="button" class="avatar-opt" data-emoji="😊">😊</button>
+        <button type="button" class="avatar-opt" data-emoji="😎">😎</button>
+        <button type="button" class="avatar-opt" data-emoji="🎮">🎮</button>
+        <button type="button" class="avatar-opt" data-emoji="⭐">⭐</button>
+        <button type="button" class="avatar-opt" data-emoji="🐍">🐍</button>
+        <button type="button" class="avatar-opt" data-emoji="⭕">⭕</button>
+        <button type="button" class="avatar-opt" data-emoji="🚀">🚀</button>
+      </div>
+      <button type="button" class="btn-close-modal" onclick="document.getElementById('avatarModal').classList.remove('active')">סגור</button>
     </div>
   </div>
   <div id="accessibilityModal" class="accessibility-modal">
@@ -120,8 +144,11 @@
     <header>
       <h1>Game Hub • משחקייה</h1>
       <p class="subtitle">התחבר כדי לגשת למשחקים – איקס עיגול, נחש ועוד. משתמשים רשומים בלבד.</p>
-      <p class="user-greeting" id="userGreeting" style="display:none;"></p>
-      <button type="button" class="logout-btn" id="logoutBtn" style="display:none;" aria-label="התנתק מהחשבון">התנתק</button>
+      <div class="user-area" id="userArea" style="display:none;">
+        <button type="button" class="avatar-btn" id="avatarBtn" aria-label="בחר אווטאר">👤</button>
+        <p class="user-greeting" id="userGreeting"></p>
+        <button type="button" class="logout-btn" id="logoutBtn" aria-label="התנתק מהחשבון">התנתק</button>
+      </div>
     </header>
     <div class="games-grid">
       <a href="../games/tic-tac-toe/index.html" class="game-card game-card--ttt" id="cardTtt" aria-label="משחק איקס עיגול">
@@ -149,22 +176,38 @@
       setTimeout(hideLoader, 1500);
       try {
         const user = typeof AUTH !== "undefined" ? AUTH.getLoggedUser() : null;
+        const userArea = document.getElementById("userArea");
         const greeting = document.getElementById("userGreeting");
+        const avatarBtn = document.getElementById("avatarBtn");
         const logoutBtn = document.getElementById("logoutBtn");
         const cardTtt = document.getElementById("cardTtt");
         const cardSnake = document.getElementById("cardSnake");
-        if (user && greeting) {
-          greeting.textContent = "שלום, " + user.name + "! 👋";
-          greeting.style.display = "block";
-          if (logoutBtn) logoutBtn.style.display = "inline-block";
+        if (user && userArea) {
+          userArea.style.display = "flex";
+          if (avatarBtn) { avatarBtn.textContent = user.avatar || "👤"; }
+          if (greeting) greeting.textContent = "שלום, " + user.name + "!";
           if (cardTtt) { cardTtt.classList.remove("locked"); cardTtt.href = "../games/tic-tac-toe/index.html"; cardTtt.removeAttribute("aria-disabled"); }
           if (cardSnake) { cardSnake.classList.remove("locked"); cardSnake.href = "../games/snake/index.html"; cardSnake.removeAttribute("aria-disabled"); }
         } else {
           if (cardTtt) { cardTtt.classList.add("locked"); cardTtt.href = "../login/index.html"; cardTtt.setAttribute("aria-disabled", "true"); }
           if (cardSnake) { cardSnake.classList.add("locked"); cardSnake.href = "../login/index.html"; cardSnake.setAttribute("aria-disabled", "true"); }
         }
+        if (avatarBtn) avatarBtn.addEventListener("click", function() {
+          var m = document.getElementById("avatarModal");
+          if (m) m.classList.add("active");
+        });
+        document.querySelectorAll(".avatar-opt").forEach(function(btn) {
+          btn.addEventListener("click", function() {
+            var em = this.getAttribute("data-emoji");
+            if (typeof AUTH !== "undefined" && em) { AUTH.updateAvatar(em); avatarBtn.textContent = em; }
+            document.getElementById("avatarModal").classList.remove("active");
+          });
+        });
         if (logoutBtn) logoutBtn.addEventListener("click", function() { if (typeof AUTH !== "undefined") AUTH.logout(); location.reload(); });
         if (typeof APP !== "undefined") { APP.init(); APP.updateActivity(); }
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.register("../../sw.js", { scope: "/" }).catch(function() {});
+        }
         var settingsBtn = document.getElementById("settingsBtn");
         if (settingsBtn) settingsBtn.addEventListener("click", function() {
           var m = document.getElementById("accessibilityModal");

@@ -27,10 +27,27 @@ const AUTH = {
 
   setLoggedUser(user) {
     if (user) {
-      localStorage.setItem(this.LOGGED_KEY, JSON.stringify({ name: user.name, email: user.email }));
+      localStorage.setItem(this.LOGGED_KEY, JSON.stringify({
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar || "👤"
+      }));
     } else {
       localStorage.removeItem(this.LOGGED_KEY);
     }
+  },
+
+  updateAvatar(emoji) {
+    const u = this.getLoggedUser();
+    if (!u) return;
+    const avatar = emoji || "👤";
+    const users = this.getUsers();
+    const idx = users.findIndex((x) => x.email === u.email);
+    if (idx >= 0) {
+      users[idx].avatar = avatar;
+      this.saveUsers(users);
+    }
+    this.setLoggedUser({ ...u, avatar });
   },
 
   logout() {
@@ -51,9 +68,9 @@ const AUTH = {
     if (users.some(u => u.email === em)) {
       return { success: false, error: "אימייל זה כבר רשום. נסה להתחבר." };
     }
-    users.push({ name: name.trim(), email: em, password });
+    users.push({ name: name.trim(), email: em, password, avatar: "👤" });
     this.saveUsers(users);
-    this.setLoggedUser({ name: name.trim(), email: em });
+    this.setLoggedUser({ name: name.trim(), email: em, avatar: "👤" });
     return { success: true, isNewUser: true };
   },
 
@@ -67,7 +84,7 @@ const AUTH = {
     if (!user) {
       return { success: false, error: "אימייל או סיסמה שגויים." };
     }
-    this.setLoggedUser({ name: user.name, email: user.email });
+    this.setLoggedUser({ name: user.name, email: user.email, avatar: user.avatar || "👤" });
     return { success: true, isNewUser: false };
   }
 };
