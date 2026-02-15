@@ -73,8 +73,10 @@ html, body {
   position: absolute;
   top: 1rem;
   left: 1rem;
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.3);
   background: rgba(255,255,255,0.08);
