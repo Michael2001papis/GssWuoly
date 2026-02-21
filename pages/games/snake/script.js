@@ -62,17 +62,20 @@
   }
 
   function spawnFruit() {
-    let x, y;
-    let attempts = 0;
-    do {
+    var free = [];
+    for (var gx = 0; gx < SIZE; gx += GRID) {
+      for (var gy = 0; gy < SIZE; gy += GRID) {
+        if (!isOccupied(gx, gy, false)) free.push({ x: gx, y: gy });
+      }
+    }
+    var p = free.length > 0 ? free[Math.floor(Math.random() * free.length)] : { x: 0, y: 0 };
+    var x = p.x, y = p.y;
+    var attempts = 0;
+    while (attempts < 100 && isOccupied(x, y, false)) {
       x = Math.floor(Math.random() * (SIZE / GRID)) * GRID;
       y = Math.floor(Math.random() * (SIZE / GRID)) * GRID;
       attempts++;
-    } while (
-      attempts < 100 &&
-      (snake.some(function(s) { return s.x === x && s.y === y; }) ||
-       obstacles.some(function(o) { return o.x === x && o.y === y; }))
-    );
+    }
     const types = ["normal", "bonus", "double", "slow", "fast"];
     const r = Math.random();
     let type = "normal";
@@ -188,6 +191,9 @@
       var s = JSON.parse(raw);
       if (!s || !s.snake || !Array.isArray(s.snake) || s.snake.length < 1) return null;
       if (Date.now() - (s.ts || 0) > SAVE_MAX_HOURS * 60 * 60 * 1000) return null;
+      if (!s.fruit || typeof s.fruit.x !== "number" || typeof s.fruit.y !== "number") return null;
+      var validDir = ["LEFT", "RIGHT", "UP", "DOWN"];
+      if (!validDir.includes(s.direction)) return null;
       return s;
     } catch (e) { return null; }
   }
@@ -539,7 +545,13 @@
 
   function saveToLeaderboard() {
     var data = getLeaderboard();
-    var name = (typeof window.__loggedUserName === "string" && window.__loggedUserName) ? window.__loggedUserName : "אורח";
+    var name = "אורח";
+    if (typeof window.__loggedUserName === "string" && window.__loggedUserName.trim()) {
+      name = window.__loggedUserName.trim();
+    } else if (typeof AUTH !== "undefined" && AUTH.getLoggedUser) {
+      var u = AUTH.getLoggedUser();
+      if (u && u.name) name = String(u.name).trim() || name;
+    }
     data.push({ score: score, name: name });
     data.sort(function(a, b) { return (b.score || 0) - (a.score || 0); });
     data = data.slice(0, 5);
@@ -672,6 +684,11 @@
         else if (d === "RIGHT" && direction !== "LEFT") direction = "RIGHT";
       });
     });
+
+    if (typeof AUTH !== "undefined" && AUTH.getLoggedUser) {
+      var u = AUTH.getLoggedUser();
+      if (u && u.name) window.__loggedUserName = String(u.name).trim();
+    }
 
     renderLeaderboard(getLeaderboard());
     highScore = loadHighScore();

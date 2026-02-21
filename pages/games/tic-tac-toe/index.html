@@ -197,16 +197,21 @@
         });
         if (typeof SOUNDS !== "undefined" && SOUNDS.isMuted()) muteBtn.textContent = "🔇";
       }
-      var settingsBtn = document.getElementById("settingsBtn");
-      if (settingsBtn) settingsBtn.addEventListener("click", function() {
-        var m = document.getElementById("accessibilityModal");
-        if (m) m.classList.toggle("active");
-      });
       var tips = document.getElementById("tipsOverlay");
       var helpBtn = document.getElementById("showTttHelp");
-      if (helpBtn && tips) helpBtn.addEventListener("click", function() { tips.classList.add("active"); });
       var closeTips = document.getElementById("closeTips");
-      if (closeTips && tips) closeTips.addEventListener("click", function() { tips.classList.remove("active"); });
+      if (tips) {
+        function closeTipsOverlay() { tips.classList.remove("active"); }
+        function toggleTipsOverlay() { tips.classList.toggle("active"); }
+        if (helpBtn) helpBtn.addEventListener("click", toggleTipsOverlay);
+        if (closeTips) closeTips.addEventListener("click", closeTipsOverlay);
+        tips.addEventListener("click", function(e) {
+          if (e.target === tips) closeTipsOverlay();
+        });
+        document.addEventListener("keydown", function(e) {
+          if (e.key === "Escape" && tips.classList.contains("active")) closeTipsOverlay();
+        });
+      }
     })();
   </script>
 </body>

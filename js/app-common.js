@@ -113,6 +113,17 @@ const APP = {
     modal.addEventListener("click", function(e) {
       if (e.target === modal) modal.classList.remove("active");
     });
+    var settingsBtn = document.getElementById("settingsBtn");
+    if (settingsBtn) {
+      settingsBtn.addEventListener("click", function() {
+        modal.classList.toggle("active");
+      });
+    }
+    document.addEventListener("keydown", function escClose(e) {
+      if (e.key === "Escape" && modal.classList.contains("active")) {
+        modal.classList.remove("active");
+      }
+    });
   },
 
   startActivityTracking() {

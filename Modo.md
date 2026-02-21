@@ -376,6 +376,7 @@
 | מניעת מאזינים כפולים | standalone.js | כשקיים APP – standalone לא מוסיף listeners (Theme/Settings) |
 | בדיקת null | home/index.html | avatarModal, avatarBtn – בדיקה לפני גישה |
 | boot סנייק | snake/script.js | retry אם canvas חסר; DOMContentLoaded כש-readyState loading |
+| Snake Page UX | snake, app-common | APP מנהל settingsBtn; tips: toggle, ESC, click-outside; אסטרטגיה A |
 
 ---
 

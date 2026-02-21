@@ -209,13 +209,6 @@
         if ("serviceWorker" in navigator) {
           navigator.serviceWorker.register("../../sw.js", { scope: "/" }).catch(function() {});
         }
-        var settingsBtn = document.getElementById("settingsBtn");
-        if (settingsBtn) {
-          settingsBtn.addEventListener("click", function() {
-            var m = document.getElementById("accessibilityModal");
-            if (m) m.classList.toggle("active");
-          });
-        }
       } catch (e) { console.warn("Home init:", e); }
     })();
   </script>

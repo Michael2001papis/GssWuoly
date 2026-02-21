@@ -2,9 +2,6 @@ document.addEventListener("DOMContentLoaded", function() {
   if (typeof APP !== "undefined") {
     APP.init();
     APP.updateActivity();
-    document.getElementById("settingsBtn")?.addEventListener("click", function() {
-      document.getElementById("accessibilityModal")?.classList.toggle("active");
-    });
   }
   const pwInput = document.getElementById("signupPassword");
   if (pwInput) {
