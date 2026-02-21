@@ -5,6 +5,10 @@
 /**
  * עיצוב משותף: שעון, מצב בהיר/כהה, הגדרות נגישות
  */
+html {
+  overflow-x: hidden;
+}
+
 :root, .theme-dark {
   --app-bg: #0f0f14;
   --app-text: #f8fafc;

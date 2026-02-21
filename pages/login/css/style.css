@@ -248,6 +248,26 @@ body {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
 }
 
+@media (max-width: 600px) {
+  body { padding: 1rem; padding-top: 4rem; }
+  .login-wrapper { max-width: 100%; }
+  .form-panel { padding: 1.75rem 1.5rem; }
+  .form-panel h1 { font-size: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  body { padding: 0.75rem; padding-top: 4rem; }
+  .form-panel { padding: 1.5rem 1rem; }
+  .tab-btn { padding: 0.85rem 1rem; font-size: 0.95rem; }
+}
+
+@media (max-width: 360px) {
+  body { padding: 0.5rem; padding-top: 4rem; }
+  .form-panel { padding: 1.25rem 0.75rem; }
+  .form-panel h1 { font-size: 1.35rem; }
+  .form-panel input { min-height: 44px; padding: 0.75rem 0.9rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
