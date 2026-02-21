@@ -275,6 +275,11 @@
     }
 
     updatePowerUp();
+    var wrap = document.querySelector(".canvas-wrap");
+    if (wrap) {
+      if (powerUp) wrap.classList.add("powerup-glow");
+      else wrap.classList.remove("powerup-glow");
+    }
     updateUI();
 
     if (eff !== lastEffectiveSpeed) {
@@ -295,6 +300,8 @@
 
     if (head.x === fruit.x && head.y === fruit.y) {
       if (typeof SOUNDS !== "undefined" && SOUNDS.eat) SOUNDS.eat();
+      var wrap = document.querySelector(".canvas-wrap");
+      if (wrap) { wrap.classList.add("eat-flash"); setTimeout(function() { wrap.classList.remove("eat-flash"); }, 150); }
       var mult = getScoreMultiplier();
       var base = fruit.type === "bonus" ? 20 : fruit.type === "double" ? 15 : fruit.type === "slow" || fruit.type === "fast" ? 25 : 10;
       score += Math.floor(base * mult);
@@ -346,6 +353,8 @@
       obstacles.some(function(o) { return o.x === head.x && o.y === head.y; });
 
     if (collision) {
+      var wrap = document.querySelector(".canvas-wrap");
+      if (wrap) { wrap.classList.add("collision-shake"); setTimeout(function() { wrap.classList.remove("collision-shake"); }, 400); }
       setState(STATE.GAME_OVER);
       clearAllIntervals();
       drawGameOverScreen();
@@ -546,6 +555,7 @@
     for (var i = 0; i < 5; i++) {
       var row = document.createElement("tr");
       var ent = list[i] || { score: 0, name: "-" };
+      if (i === 0 && (ent.score || 0) > 0) row.className = "leader-first";
       row.innerHTML = "<td>" + (i + 1) + "</td><td>" + (ent.name || "-") + "</td><td>" + (ent.score || 0) + "</td>";
       tbody.appendChild(row);
     }
