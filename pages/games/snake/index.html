@@ -39,18 +39,18 @@
       <p class="player-badge" id="playerBadge"></p>
       <div id="gameHUD" class="game-hud" role="status" aria-live="polite" aria-atomic="true">
         <div class="hud-row">
-          <span class="hud-item"><span class="hud-label">ניקוד</span> <span id="scoreDisplay" aria-label="ניקוד נוכחי">0</span></span>
-          <span class="hud-item"><span class="hud-label">שיא</span> <span id="highScoreDisplay" aria-label="שיא ניקוד">0</span></span>
-          <span class="hud-item"><span class="hud-label">זמן</span> <span id="timerDisplay" aria-label="זמן במשחק בשניות">0</span></span>
-          <span class="hud-item"><span class="hud-label">רמה</span> <span id="levelDisplay" aria-label="רמת משחק">1</span></span>
-          <span class="hud-item"><span class="hud-label">מצב</span> <span id="stateDisplay" aria-label="מצב משחק נוכחי">מוכן</span></span>
+          <span class="hud-item"><span class="hud-label">ניקוד</span> <span class="hud-value" id="scoreDisplay" aria-label="ניקוד נוכחי">0</span></span>
+          <span class="hud-item"><span class="hud-label">שיא</span> <span class="hud-value" id="highScoreDisplay" aria-label="שיא ניקוד">0</span></span>
+          <span class="hud-item"><span class="hud-label">זמן</span> <span class="hud-value" id="timerDisplay" aria-label="זמן במשחק בשניות">0</span></span>
+          <span class="hud-item"><span class="hud-label">רמה</span> <span class="hud-value" id="levelDisplay" aria-label="רמת משחק">1</span></span>
+          <span class="hud-item"><span class="hud-label">מצב</span> <span class="hud-value" id="stateDisplay" aria-label="מצב משחק נוכחי">מוכן</span></span>
         </div>
         <div class="hud-row hud-bonuses">
           <span id="powerUpDisplay" class="hud-bonus" style="display:none" aria-live="polite"></span>
           <span id="comboDisplay" class="hud-bonus" style="display:none" aria-live="polite"></span>
         </div>
       </div>
-      <div id="snakeDifficulty">
+      <div id="snakeDifficulty" class="difficulty-inline">
         <label for="speedSelect">מהירות:</label>
         <select id="speedSelect" aria-label="רמת קושי התחלתית">
           <option value="120">איטי</option>
@@ -58,37 +58,38 @@
           <option value="55">מהיר</option>
         </select>
       </div>
-      <p class="shortcuts-hint">R איפוס • P השהיה • חצים / WASD</p>
-      <div class="canvas-wrap snake-game-area">
-        <canvas id="gameCanvas" width="400" height="400" aria-label="לוח משחק נחש"></canvas>
-        <div id="startOverlay" class="start-overlay">
-          <div class="overlay-inner">
-            <span class="overlay-icon" aria-hidden="true">🐍</span>
-            <h2 id="overlayTitle">מוכן להתחיל?</h2>
-            <p class="overlay-desc">חצים או WASD לכיוון • Enter להתחלה</p>
-            <button type="button" id="btnStartOverlay" class="btn-overlay-start" aria-label="התחל משחק">
-              <span>▶</span> התחל משחק
-            </button>
+      <div class="game-area">
+        <div class="canvas-wrap snake-game-area">
+          <canvas id="gameCanvas" width="400" height="400" aria-label="לוח משחק נחש"></canvas>
+          <div id="startOverlay" class="start-overlay">
+            <div class="overlay-inner">
+              <span class="overlay-icon" aria-hidden="true">🐍</span>
+              <h2 id="overlayTitle">מוכן להתחיל?</h2>
+              <p class="overlay-desc">חצים או WASD לכיוון • Enter להתחלה</p>
+              <button type="button" id="btnStartOverlay" class="btn-overlay-start" aria-label="התחל משחק">
+                <span>▶</span> התחל משחק
+              </button>
+            </div>
           </div>
-        </div>
-        <div id="pauseOverlay" class="overlay overlay-pause hidden">
-          <div class="overlay-inner">
-            <span class="overlay-icon" aria-hidden="true">⏸</span>
-            <h2>המשחק הוקפא</h2>
-            <p class="overlay-desc">לחץ המשך להמשך</p>
-            <button type="button" id="btnPauseResume" class="btn-overlay-start" aria-label="המשך משחק">
-              <span>▶</span> המשך
-            </button>
+          <div id="pauseOverlay" class="overlay overlay-pause hidden">
+            <div class="overlay-inner">
+              <span class="overlay-icon" aria-hidden="true">⏸</span>
+              <h2>המשחק הוקפא</h2>
+              <p class="overlay-desc">לחץ המשך להמשך</p>
+              <button type="button" id="btnPauseResume" class="btn-overlay-start" aria-label="המשך משחק">
+                <span>▶</span> המשך
+              </button>
+            </div>
           </div>
-        </div>
-        <div id="gameOverOverlay" class="overlay overlay-gameover hidden">
-          <div class="overlay-inner">
-            <span class="overlay-icon" aria-hidden="true">💀</span>
-            <h2>Game Over!</h2>
-            <p class="overlay-desc">ניקוד: <span class="game-over-score">0</span> | שיא: <span class="game-over-high">0</span></p>
-            <button type="button" id="btnGameOverRestart" class="btn-overlay-start" aria-label="התחל משחק חדש">
-              <span>↻</span> משחק חדש
-            </button>
+          <div id="gameOverOverlay" class="overlay overlay-gameover hidden">
+            <div class="overlay-inner">
+              <span class="overlay-icon" aria-hidden="true">💀</span>
+              <h2>Game Over!</h2>
+              <p class="overlay-desc">ניקוד: <span class="game-over-score">0</span> | שיא: <span class="game-over-high">0</span></p>
+              <button type="button" id="btnGameOverRestart" class="btn-overlay-start" aria-label="התחל משחק חדש">
+                <span>↻</span> משחק חדש
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -106,15 +107,16 @@
         </div>
         <button type="button" class="touch-btn" data-dir="DOWN" aria-label="הנחש למטה">▼</button>
       </div>
-    </div>
-    <div id="leaderboardBox">
-      <h2>טבלת מובילים</h2>
-      <table id="leaderboard">
-        <thead>
-          <tr><th>מקום</th><th>שם</th><th>ניקוד</th></tr>
-        </thead>
-        <tbody id="leaderboardBody"></tbody>
-      </table>
+      <div id="leaderboardBox" class="leaderboard-box">
+        <h2>טבלת מובילים</h2>
+        <table id="leaderboard">
+          <thead>
+            <tr><th>מקום</th><th>שם</th><th>ניקוד</th></tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+      </div>
+      <p class="shortcuts-hint">R איפוס • P השהיה • חצים / WASD</p>
     </div>
   </div>
   <div id="avatarModal" class="accessibility-modal">

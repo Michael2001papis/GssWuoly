@@ -1,5 +1,5 @@
 /**
- * משחק נחש – עיצוב מקצועי
+ * משחק נחש – עיצוב מקצועי, ממוקד במשחק
  * כלל ברזל: רק index.html, script.js, style.css
  */
 * {
@@ -32,21 +32,22 @@ body {
   overscroll-behavior: none;
 }
 
+/* מיכל ראשי – רחב, ממורכז */
 .snake-container {
   position: relative;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 480px;
+  max-width: 1000px;
   width: 100%;
 }
 
 .snake-card {
   position: relative;
   width: 100%;
-  padding: 1.5rem;
-  background: rgba(15, 23, 42, 0.6);
+  padding: 2rem;
+  background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03);
@@ -55,12 +56,12 @@ body {
 .player-badge {
   font-size: 1rem;
   color: #4ade80;
-  margin: -0.5rem 0 0.75rem;
+  margin: -0.5rem 0 0.5rem;
   display: none;
 }
 
 .snake-container h1 {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
   -webkit-background-clip: text;
@@ -69,43 +70,48 @@ body {
   margin-bottom: 1rem;
 }
 
+/* HUD – מעל הקנבס, שורה אחת, מספרים בולטים */
 .game-hud {
   margin-bottom: 1rem;
-  padding: 0.75rem 1rem;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 14px;
+  padding: 0.6rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .hud-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.25rem;
   justify-content: center;
   align-items: center;
 }
 
 .hud-row:not(:last-child) {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .hud-item {
   display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
-  background: rgba(34, 197, 94, 0.15);
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  background: rgba(34, 197, 94, 0.12);
   border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #4ade80;
 }
 
 .hud-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #94a3b8;
-  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hud-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #4ade80;
 }
 
 .hud-bonuses {
@@ -113,7 +119,7 @@ body {
 }
 
 .hud-bonus {
-  padding: 0.3rem 0.6rem;
+  padding: 0.25rem 0.6rem;
   font-size: 0.9rem;
   font-weight: 700;
   color: #fbbf24;
@@ -121,36 +127,238 @@ body {
   border-radius: 8px;
 }
 
-#snakeDifficulty {
-  margin-bottom: 0.5rem;
+.difficulty-inline {
+  margin-bottom: 1rem;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
 }
 
-#snakeDifficulty select {
-  padding: 0.4rem 0.75rem;
+.difficulty-inline select {
+  padding: 0.35rem 0.65rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(0, 0, 0, 0.3);
   color: #fff;
   font-family: inherit;
+  font-size: 0.9rem;
+}
+
+/* אזור משחק – מיכל ייעודי, קנבס במרכז */
+.game-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.canvas-wrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.snake-game-area {
+  touch-action: none;
+}
+
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  background: linear-gradient(145deg, #14532d 0%, #166534 50%, #15803d 100%);
+}
+
+/* Overlay – מעל הקנבס בלבד */
+.start-overlay,
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+}
+
+.start-overlay {
+  background: linear-gradient(160deg, rgba(6, 78, 59, 0.92) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(5, 46, 22, 0.92) 100%);
+}
+
+.overlay-pause {
+  background: linear-gradient(160deg, rgba(30, 58, 138, 0.92) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(30, 64, 175, 0.9) 100%);
+}
+
+.overlay-gameover {
+  background: linear-gradient(160deg, rgba(127, 29, 29, 0.92) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(153, 27, 27, 0.9) 100%);
+}
+
+.start-overlay.hidden,
+.overlay.hidden {
+  display: none !important;
+}
+
+.overlay-inner {
+  text-align: center;
+  padding: 2rem 1.5rem;
+}
+
+.overlay-icon {
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.start-overlay h2,
+.overlay h2 {
+  font-size: 1.35rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #fff 0%, #86efac 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.overlay-gameover h2 {
+  background: linear-gradient(135deg, #fca5a5 0%, #ef4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.overlay-desc {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
+
+.btn-overlay-start {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-overlay-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.5);
+}
+
+.btn-overlay-start:active {
+  transform: translateY(0);
+}
+
+.btn-overlay-start:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.6);
+}
+
+/* כפתורים – מתחת לקנבס, ממורכזים */
+.controls-wrap {
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.controls-wrap button {
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0.75rem 1.5rem;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-start {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.35);
+}
+
+.btn-start:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 28px rgba(34, 197, 94, 0.5);
+}
+
+.btn-start:active {
+  transform: translateY(0) scale(1);
+}
+
+.btn-stop {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+}
+
+.btn-stop:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(245, 158, 11, 0.45);
+}
+
+.btn-stop:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-reset {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-reset:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.controls-wrap button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.controls-wrap button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.5);
 }
 
 .btn-help {
   position: absolute;
   top: 1rem;
   left: 1rem;
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
   color: #94a3b8;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   line-height: 1;
@@ -172,6 +380,104 @@ body {
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.5);
 }
 
+/* טבלת מובילים – רוחב דומה למשחק */
+.leaderboard-box {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.leaderboard-box h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4ade80;
+}
+
+#leaderboard {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#leaderboard th,
+#leaderboard td {
+  padding: 0.4rem 0.5rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.9rem;
+}
+
+#leaderboard th {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  font-weight: 600;
+}
+
+#leaderboard td {
+  color: #e2e8f0;
+}
+
+/* הסבר – בתחתית, קטן, לא מושך תשומת לב */
+.shortcuts-hint {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+  padding-top: 0.5rem;
+}
+
+/* Touch controls */
+.touch-controls {
+  display: none;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.touch-row {
+  display: flex;
+  gap: 4rem;
+  align-items: center;
+}
+
+.touch-btn {
+  min-width: 64px;
+  min-height: 64px;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border-radius: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.touch-btn:hover {
+  background: rgba(34, 197, 94, 0.25);
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.touch-btn:active {
+  background: rgba(34, 197, 94, 0.5);
+  transform: scale(0.92);
+}
+
+.touch-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.5);
+}
+
+/* Tips overlay (עזרה) */
 .tips-overlay {
   display: none;
   position: fixed;
@@ -222,289 +528,6 @@ body {
   box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
 }
 
-.shortcuts-hint {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin-bottom: 0.75rem;
-}
-
-.canvas-wrap {
-  position: relative;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-.snake-game-area {
-  touch-action: none;
-}
-
-#gameCanvas {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 1;
-  background: linear-gradient(145deg, #14532d 0%, #166534 50%, #15803d 100%);
-}
-
-.start-overlay,
-.overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: #fff;
-  backdrop-filter: blur(14px);
-  border-radius: 16px;
-}
-
-.start-overlay {
-  background: linear-gradient(160deg, rgba(6, 78, 59, 0.92) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(5, 46, 22, 0.92) 100%);
-}
-
-.overlay-pause {
-  background: linear-gradient(160deg, rgba(30, 58, 138, 0.92) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(30, 64, 175, 0.9) 100%);
-}
-
-.overlay-gameover {
-  background: linear-gradient(160deg, rgba(127, 29, 29, 0.92) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(153, 27, 27, 0.9) 100%);
-}
-
-.start-overlay.hidden,
-.overlay.hidden {
-  display: none !important;
-}
-
-.overlay-inner {
-  text-align: center;
-  padding: 2rem 1.5rem;
-}
-
-.overlay-icon {
-  display: block;
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.start-overlay h2,
-.overlay h2 {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #fff 0%, #86efac 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.overlay-gameover h2 {
-  background: linear-gradient(135deg, #fca5a5 0%, #ef4444 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.overlay-desc {
-  font-size: 1rem;
-  color: #94a3b8;
-  margin-bottom: 1.25rem;
-}
-
-.btn-overlay-start {
-  padding: 0.85rem 1.75rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  font-family: inherit;
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  color: #fff;
-  box-shadow: 0 6px 24px rgba(34, 197, 94, 0.4);
-  transition: all 0.25s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.btn-overlay-start:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(34, 197, 94, 0.55);
-}
-
-.btn-overlay-start:active {
-  transform: translateY(-1px);
-}
-
-.btn-overlay-start:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.6);
-}
-
-.controls-wrap {
-  margin-top: 1.25rem;
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.controls-wrap button {
-  min-height: 48px;
-  min-width: 48px;
-  padding: 0.7rem 1.4rem;
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.btn-start {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.35);
-}
-
-.btn-start:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.5);
-}
-
-.btn-start:active {
-  transform: translateY(0) scale(1);
-}
-
-.btn-stop {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
-}
-
-.btn-stop:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.45);
-}
-
-.btn-stop:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-reset {
-  background: rgba(255, 255, 255, 0.08);
-  color: #e2e8f0;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.btn-reset:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-.controls-wrap button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.controls-wrap button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.5);
-}
-
-.touch-controls {
-  display: none;
-  margin-top: 1.25rem;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.touch-row {
-  display: flex;
-  gap: 4rem;
-  align-items: center;
-}
-
-.touch-btn {
-  min-width: 64px;
-  min-height: 64px;
-  width: 72px;
-  height: 72px;
-  padding: 0;
-  border-radius: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  font-size: 1.6rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.touch-btn:hover {
-  background: rgba(34, 197, 94, 0.25);
-  border-color: rgba(74, 222, 128, 0.5);
-}
-
-.touch-btn:active {
-  background: rgba(34, 197, 94, 0.5);
-  transform: scale(0.92);
-}
-
-.touch-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.5);
-}
-
-#leaderboardBox {
-  margin-top: 1.5rem;
-  width: 100%;
-  max-width: 320px;
-  padding: 1.25rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-}
-
-#leaderboardBox h2 {
-  margin: 0 0 1rem;
-  font-size: 1.1rem;
-  color: #4ade80;
-}
-
-#leaderboard {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-#leaderboard th,
-#leaderboard td {
-  padding: 0.5rem;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-#leaderboard th {
-  background: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
-  font-weight: 600;
-}
-
-#leaderboard td {
-  color: #e2e8f0;
-}
-
 .accessibility-modal {
   position: fixed;
   inset: 0;
@@ -523,7 +546,19 @@ body {
   display: flex !important;
 }
 
+/* Desktop – קנבס גדול */
+@media (min-width: 601px) {
+  .canvas-wrap {
+    max-width: 520px;
+  }
+}
+
+/* Mobile */
 @media (max-width: 600px) {
+  .snake-card {
+    padding: 1.25rem;
+  }
+
   .touch-controls {
     display: flex;
   }
@@ -536,17 +571,24 @@ body {
     font-size: 1.8rem;
   }
 
-  .snake-card {
-    padding: 1rem;
+  .canvas-wrap {
+    max-width: 100%;
   }
 
   .hud-row {
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
 
   .hud-item {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.95rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .hud-value {
+    font-size: 1.1rem;
+  }
+
+  .leaderboard-box {
+    max-width: 100%;
   }
 }
 
