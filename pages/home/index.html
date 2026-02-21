@@ -199,8 +199,9 @@
         document.querySelectorAll(".avatar-opt").forEach(function(btn) {
           btn.addEventListener("click", function() {
             var em = this.getAttribute("data-emoji");
-            if (typeof AUTH !== "undefined" && em) { AUTH.updateAvatar(em); avatarBtn.textContent = em; }
-            document.getElementById("avatarModal").classList.remove("active");
+            if (typeof AUTH !== "undefined" && em) { AUTH.updateAvatar(em); if (avatarBtn) avatarBtn.textContent = em; }
+            var m = document.getElementById("avatarModal");
+            if (m) m.classList.remove("active");
           });
         });
         if (logoutBtn) logoutBtn.addEventListener("click", function() { if (typeof AUTH !== "undefined") AUTH.logout(); location.reload(); });
@@ -209,10 +210,12 @@
           navigator.serviceWorker.register("../../sw.js", { scope: "/" }).catch(function() {});
         }
         var settingsBtn = document.getElementById("settingsBtn");
-        if (settingsBtn) settingsBtn.addEventListener("click", function() {
-          var m = document.getElementById("accessibilityModal");
-          if (m) m.classList.toggle("active");
-        });
+        if (settingsBtn) {
+          settingsBtn.addEventListener("click", function() {
+            var m = document.getElementById("accessibilityModal");
+            if (m) m.classList.toggle("active");
+          });
+        }
       } catch (e) { console.warn("Home init:", e); }
     })();
   </script>

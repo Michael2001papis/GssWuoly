@@ -369,6 +369,15 @@
 | analytics ללא שגיאות בלי הגדרה | ✓ קוד בודק `config` – לא זורק אם לא מוגדר |
 | build-static.js | ✓ מעתיק את כל הקבצים ל-dist |
 
+## תיקוני תקלות לוקאל (פברואר 2025)
+
+| תיקון | קובץ | פירוט |
+|-------|------|-------|
+| מניעת מאזינים כפולים | standalone.js | כשקיים APP – standalone לא מוסיף listeners (Theme/Settings) |
+| בדיקת null | home/index.html | avatarModal, avatarBtn – בדיקה לפני גישה |
+
+---
+
 ## הרצה ידנית (בטרמינל בתיקיית הפרויקט)
 
 ```bash
