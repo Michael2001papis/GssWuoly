@@ -33,8 +33,8 @@
 - `sw.js` – analytics.js ב-cache, תיעוד
 - `js/standalone.js` – תיעוד fallback
 - `js/auth.test.js` – הערה על סנכרון עם auth.js
-- `README.md` – עדכון מלא
-- `SOLUTION_PLAN.md` – מסמך מעקב (חדש)
+- `README.md` – נמחק (לא רלוונטי עד לסיום הבדיקות)
+- `SOLUTION_PLAN.md` – נמחק
 
 ---
 
@@ -355,6 +355,34 @@
 2. **sitemap.xml:** להחליף `YOUR_DOMAIN` בכתובת האתר לפני פריסה.
 3. **auth.test.js:** לשמור סנכרון ידני עם auth.js (או לעבור ל-build עם ESM).
 4. **index.html:** לבחור אסטרטגיית הפניה אחת.
+
+---
+
+# תוצאות ביצוע הוראות (אוטומטי)
+
+## מה אומת
+
+| בדיקה | סטטוס |
+|-------|--------|
+| Disclaimer בדף התחברות | ✓ קיים – "דמו: נתונים נשמרים מקומית בדפדפן. אל תשתמשו בסיסמאות אמיתיות." |
+| analytics.js בכל הדפים | ✓ 10 דפים – home, login, about, contact, privacy, terms, 404, tic-tac-toe, snake |
+| analytics ללא שגיאות בלי הגדרה | ✓ קוד בודק `config` – לא זורק אם לא מוגדר |
+| build-static.js | ✓ מעתיק את כל הקבצים ל-dist |
+
+## הרצה ידנית (בטרמינל בתיקיית הפרויקט)
+
+```bash
+npm test -- --run      # Vitest
+npm run build          # Build
+npm run test:e2e       # Playwright
+```
+
+**או:** להריץ `run-tests.bat` (קובץ שנוצר להרצה).
+
+## לפני Deploy – להחליף
+
+- `YOUR_DOMAIN` ב-`sitemap.xml` בכתובת האתר האמיתית.
+- לבדוק ידנית: Console, Offline, מובייל.
 
 ---
 
