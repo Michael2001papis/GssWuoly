@@ -5,8 +5,8 @@
     (function(){var t=localStorage.getItem("gameHubTheme")||"dark";document.documentElement.classList.add("theme-"+t);try{var a=JSON.parse(localStorage.getItem("gameHubAccessibility")||"{}");var r=document.documentElement;if(a.bigText)r.classList.add("a11y-big-text");if(a.highContrast)r.classList.add("a11y-high-contrast");if(a.reduceMotion)r.classList.add("a11y-reduce-motion");if(a.focusVisible)r.classList.add("a11y-focus-visible");if(a.spacing)r.classList.add("a11y-spacing");if(a.largeCursor)r.classList.add("a11y-large-cursor");if(a.underlineLinks)r.classList.add("a11y-underline-links");if(a.dyslexiaFont)r.classList.add("a11y-dyslexia");}catch(e){}})();
   </script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
   <meta name="description" content="משחק איקס עיגול - PvP או נגד המחשב. שמות שחקנים, רמות קושי וטבלת נצחונות.">
   <meta property="og:title" content="איקס עיגול | Game Hub">
   <title>איקס עיגול | Game Hub</title>
@@ -33,7 +33,8 @@
       <button type="button" class="app-icon-btn" id="settingsBtn" title="הגדרות" aria-label="הגדרות">⚙</button>
     </div>
   </div>
-  <div class="game-container">
+  <div class="game-container ttt-card">
+    <button type="button" id="showTttHelp" class="btn-help" title="עזרה" aria-label="הצג עזרה">?</button>
     <h1>איקס עיגול</h1>
     <p class="player-badge" id="playerBadge"></p>
     
@@ -51,8 +52,7 @@
     </div>
     <p id="gameStats" class="game-stats">משחקים: 0 | ניצחונות: 0%</p>
     
-    <button type="button" id="showTttHelp" class="btn-help" title="עזרה" aria-label="הצג עזרה">?</button>
-    <div id="modeSelector">
+    <div id="modeSelector" class="difficulty-inline">
       <label for="gameMode">מצב משחק</label>
       <select id="gameMode" aria-label="בחר מצב משחק">
         <option value="pvp" selected>שחקן מול שחקן</option>
@@ -66,6 +66,7 @@
       </select>
     </div>
     
+    <div class="game-area">
     <div class="tictactoe" role="grid" aria-label="לוח משחק איקס עיגול">
       <button type="button" class="btn" data-index="0" aria-label="תא 1"></button>
       <button type="button" class="btn" data-index="1" aria-label="תא 2"></button>
@@ -77,14 +78,15 @@
       <button type="button" class="btn" data-index="7" aria-label="תא 8"></button>
       <button type="button" class="btn" data-index="8" aria-label="תא 9"></button>
     </div>
+    </div>
     
-    <div id="controls">
+    <div id="controls" class="controls-wrap">
       <button id="resetBtn" type="button" title="איפוס משחק ותוצאות"><span class="btn-icon">↻</span> איפוס משחק</button>
       <button id="stopBtn" type="button" title="עצור משחק"><span class="btn-icon">⏸</span> עצור</button>
       <button id="victoryTableBtn" type="button" title="הצג טבלת נצחונות"><span class="btn-icon">📊</span> טבלת נצחונות</button>
     </div>
     
-    <section id="victoryTable" class="hidden" aria-label="טבלת נצחונות">
+    <section id="victoryTable" class="victory-table-box hidden" aria-label="טבלת נצחונות">
       <h2>טבלת נצחונות</h2>
       <table>
         <thead>
@@ -105,7 +107,7 @@
         </tbody>
       </table>
     </section>
-    
+    <p class="shortcuts-hint">לחץ על תא ריק • איפוס – כפתור איפוס • ? לעזרה</p>
   </div>
   <div id="avatarModal" class="accessibility-modal">
     <div class="accessibility-content">
