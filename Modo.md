@@ -377,6 +377,7 @@
 | בדיקת null | home/index.html | avatarModal, avatarBtn – בדיקה לפני גישה |
 | boot סנייק | snake/script.js | retry אם canvas חסר; DOMContentLoaded כש-readyState loading |
 | Snake Page UX | snake, app-common | APP מנהל settingsBtn; tips: toggle, ESC, click-outside; אסטרטגיה A |
+| isOccupied + boot | snake/script.js | obstacles לפני spawnFruit; הגנה snake/obstacles undefined; load save fallbacks |
 
 ---
 

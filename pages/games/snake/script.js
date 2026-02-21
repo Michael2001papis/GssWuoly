@@ -87,10 +87,11 @@
   }
 
   function isOccupied(x, y, excludeHead) {
-    const body = excludeHead ? snake.slice(1) : snake;
-    if (body.some(function(s) { return s.x === x && s.y === y; })) return true;
-    if (obstacles.some(function(o) { return o.x === x && o.y === y; })) return true;
-    if (fruit && fruit.x === x && fruit.y === y) return true;
+    var bodyArr = (snake && Array.isArray(snake)) ? (excludeHead ? snake.slice(1) : snake) : [];
+    var obsArr = (obstacles && Array.isArray(obstacles)) ? obstacles : [];
+    if (bodyArr.some(function(s) { return s && s.x === x && s.y === y; })) return true;
+    if (obsArr.some(function(o) { return o && o.x === x && o.y === y; })) return true;
+    if (fruit && typeof fruit.x === "number" && typeof fruit.y === "number" && fruit.x === x && fruit.y === y) return true;
     return false;
   }
 
@@ -116,6 +117,7 @@
   let lastObstacleScore = 0;
 
   function addObstacleIfNeeded() {
+    if (!obstacles || !Array.isArray(obstacles)) obstacles = [];
     var level = Math.floor(score / 50);
     var currentTotal = obstacles.length;
     var target = 5 + level;
@@ -220,14 +222,16 @@
     if (fromSave) {
       var saved = loadGameState();
       if (saved) {
-        snake = saved.snake;
-        direction = saved.direction;
-        fruit = saved.fruit;
-        obstacles = Array.isArray(saved.obstacles) ? saved.obstacles : spawnObstacles(5);
+        snake = (saved.snake && Array.isArray(saved.snake) && saved.snake.length > 0) ? saved.snake : [{ x: 200, y: 200 }];
+        direction = saved.direction || "RIGHT";
         score = saved.score || 0;
         gameTime = saved.gameTime || 0;
         gameSpeed = saved.gameSpeed || getSpeed();
         baseSpeed = saved.baseSpeed || gameSpeed;
+        obstacles = Array.isArray(saved.obstacles) ? saved.obstacles : [];
+        fruit = (saved.fruit && typeof saved.fruit.x === "number" && typeof saved.fruit.y === "number") ? saved.fruit : null;
+        if (!fruit) fruit = spawnFruit();
+        if (obstacles.length === 0) obstacles = spawnObstacles(5);
       } else {
         fromSave = false;
       }
@@ -237,6 +241,7 @@
       gameSpeed = baseSpeed;
       snake = [{ x: 200, y: 200 }];
       direction = "RIGHT";
+      obstacles = [];
       fruit = spawnFruit();
       obstacles = spawnObstacles(5);
       score = 0;
@@ -436,6 +441,7 @@
     gameSpeed = baseSpeed;
     snake = [{ x: 200, y: 200 }];
     direction = "RIGHT";
+    obstacles = [];
     fruit = spawnFruit();
     obstacles = spawnObstacles(5);
     score = 0;
@@ -708,6 +714,7 @@
     gameSpeed = baseSpeed;
     snake = [{ x: 200, y: 200 }];
     direction = "RIGHT";
+    obstacles = [];
     fruit = spawnFruit();
     obstacles = spawnObstacles(5);
     score = 0;
