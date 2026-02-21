@@ -5,7 +5,7 @@
     (function(){var t=localStorage.getItem("gameHubTheme")||"dark";document.documentElement.classList.add("theme-"+t);try{var a=JSON.parse(localStorage.getItem("gameHubAccessibility")||"{}");var r=document.documentElement;if(a.bigText)r.classList.add("a11y-big-text");if(a.highContrast)r.classList.add("a11y-high-contrast");if(a.reduceMotion)r.classList.add("a11y-reduce-motion");if(a.focusVisible)r.classList.add("a11y-focus-visible");if(a.spacing)r.classList.add("a11y-spacing");if(a.largeCursor)r.classList.add("a11y-large-cursor");if(a.underlineLinks)r.classList.add("a11y-underline-links");if(a.dyslexiaFont)r.classList.add("a11y-dyslexia");}catch(e){}})();
   </script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0f172a">
   <meta name="description" content="משחק נחש קלאסי עם טיימר, ניקוד, טבלת מובילים וכפתורי מגע למובייל.">
   <meta property="og:title" content="נחש | Game Hub">
@@ -33,48 +33,79 @@
     </div>
   </div>
   <div class="snake-container">
-    <button type="button" id="showSnakeHelp" class="btn-help" title="עזרה" aria-label="הצג עזרה">?</button>
-    <h1>משחק סנייק</h1>
-    <p class="player-badge" id="playerBadge"></p>
-    <div id="gameInfo" role="status" aria-live="polite">
-      <span id="scoreDisplay">ניקוד: 0</span>
-      <span id="timerDisplay">זמן: 0</span>
-    </div>
-    <div id="snakeDifficulty">
-      <label for="speedSelect">מהירות:</label>
-      <select id="speedSelect" aria-label="רמת קושי">
-        <option value="120">איטי</option>
-        <option value="85" selected>בינוני</option>
-        <option value="55">מהיר</option>
-      </select>
-    </div>
-    <p class="shortcuts-hint">R איפוס • P השהיה • חצים / WASD</p>
-    <div class="canvas-wrap">
-      <canvas id="gameCanvas" width="400" height="400" aria-label="לוח משחק נחש"></canvas>
-      <div id="startOverlay" class="start-overlay">
-        <div class="overlay-inner">
-          <span class="overlay-icon" aria-hidden="true">🐍</span>
-          <h2 id="overlayTitle">מוכן להתחיל?</h2>
-          <p class="overlay-desc">חצים או WASD לכיוון • Enter להתחלה</p>
-          <button type="button" id="btnStartOverlay" class="btn-overlay-start">
-            <span>▶</span> התחל משחק
-          </button>
+    <div class="snake-card">
+      <button type="button" id="showSnakeHelp" class="btn-help" title="עזרה" aria-label="הצג עזרה">?</button>
+      <h1>משחק סנייק</h1>
+      <p class="player-badge" id="playerBadge"></p>
+      <div id="gameHUD" class="game-hud" role="status" aria-live="polite" aria-atomic="true">
+        <div class="hud-row">
+          <span class="hud-item"><span class="hud-label">ניקוד</span> <span id="scoreDisplay" aria-label="ניקוד נוכחי">0</span></span>
+          <span class="hud-item"><span class="hud-label">שיא</span> <span id="highScoreDisplay" aria-label="שיא ניקוד">0</span></span>
+          <span class="hud-item"><span class="hud-label">זמן</span> <span id="timerDisplay" aria-label="זמן במשחק בשניות">0</span></span>
+          <span class="hud-item"><span class="hud-label">רמה</span> <span id="levelDisplay" aria-label="רמת משחק">1</span></span>
+          <span class="hud-item"><span class="hud-label">מצב</span> <span id="stateDisplay" aria-label="מצב משחק נוכחי">מוכן</span></span>
+        </div>
+        <div class="hud-row hud-bonuses">
+          <span id="powerUpDisplay" class="hud-bonus" style="display:none" aria-live="polite"></span>
+          <span id="comboDisplay" class="hud-bonus" style="display:none" aria-live="polite"></span>
         </div>
       </div>
-    </div>
-    <div id="controls">
-      <button type="button" id="btnStart" class="btn-start" title="התחל משחק"><span>▶</span> התחל</button>
-      <button type="button" id="btnStop" class="btn-stop" title="השהה"><span>⏸</span> עצור</button>
-      <button type="button" id="btnReset" class="btn-reset" title="איפוס"><span>↻</span> איפוס</button>
-    </div>
-    <div id="touchControls" class="touch-controls">
-      <button type="button" class="touch-btn" data-dir="UP" aria-label="למעלה">▲</button>
-      <div class="touch-row">
-        <button type="button" class="touch-btn" data-dir="LEFT" aria-label="שמאלה">◀</button>
-        <span></span>
-        <button type="button" class="touch-btn" data-dir="RIGHT" aria-label="ימינה">▶</button>
+      <div id="snakeDifficulty">
+        <label for="speedSelect">מהירות:</label>
+        <select id="speedSelect" aria-label="רמת קושי התחלתית">
+          <option value="120">איטי</option>
+          <option value="85" selected>בינוני</option>
+          <option value="55">מהיר</option>
+        </select>
       </div>
-      <button type="button" class="touch-btn" data-dir="DOWN" aria-label="למטה">▼</button>
+      <p class="shortcuts-hint">R איפוס • P השהיה • חצים / WASD</p>
+      <div class="canvas-wrap snake-game-area">
+        <canvas id="gameCanvas" width="400" height="400" aria-label="לוח משחק נחש"></canvas>
+        <div id="startOverlay" class="start-overlay">
+          <div class="overlay-inner">
+            <span class="overlay-icon" aria-hidden="true">🐍</span>
+            <h2 id="overlayTitle">מוכן להתחיל?</h2>
+            <p class="overlay-desc">חצים או WASD לכיוון • Enter להתחלה</p>
+            <button type="button" id="btnStartOverlay" class="btn-overlay-start" aria-label="התחל משחק">
+              <span>▶</span> התחל משחק
+            </button>
+          </div>
+        </div>
+        <div id="pauseOverlay" class="overlay overlay-pause hidden">
+          <div class="overlay-inner">
+            <span class="overlay-icon" aria-hidden="true">⏸</span>
+            <h2>המשחק הוקפא</h2>
+            <p class="overlay-desc">לחץ המשך להמשך</p>
+            <button type="button" id="btnPauseResume" class="btn-overlay-start" aria-label="המשך משחק">
+              <span>▶</span> המשך
+            </button>
+          </div>
+        </div>
+        <div id="gameOverOverlay" class="overlay overlay-gameover hidden">
+          <div class="overlay-inner">
+            <span class="overlay-icon" aria-hidden="true">💀</span>
+            <h2>Game Over!</h2>
+            <p class="overlay-desc">ניקוד: <span class="game-over-score">0</span> | שיא: <span class="game-over-high">0</span></p>
+            <button type="button" id="btnGameOverRestart" class="btn-overlay-start" aria-label="התחל משחק חדש">
+              <span>↻</span> משחק חדש
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="controls" class="controls-wrap">
+        <button type="button" id="btnStart" class="btn-start" title="התחל משחק" aria-label="התחל משחק"><span>▶</span> התחל</button>
+        <button type="button" id="btnStop" class="btn-stop" title="השהה" aria-label="השהה משחק"><span>⏸</span> עצור</button>
+        <button type="button" id="btnReset" class="btn-reset" title="איפוס" aria-label="איפוס משחק"><span>↻</span> איפוס</button>
+      </div>
+      <div id="touchControls" class="touch-controls">
+        <button type="button" class="touch-btn" data-dir="UP" aria-label="הנחש למעלה">▲</button>
+        <div class="touch-row">
+          <button type="button" class="touch-btn" data-dir="LEFT" aria-label="הנחש שמאלה">◀</button>
+          <span></span>
+          <button type="button" class="touch-btn" data-dir="RIGHT" aria-label="הנחש ימינה">▶</button>
+        </div>
+        <button type="button" class="touch-btn" data-dir="DOWN" aria-label="הנחש למטה">▼</button>
+      </div>
     </div>
     <div id="leaderboardBox">
       <h2>טבלת מובילים</h2>

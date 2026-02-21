@@ -1,28 +1,182 @@
 /**
- * משחק נחש – גרסה נקייה ועובדת
+ * משחק נחש – גרסה מקצועית
+ * כלל ברזל: רק index.html, script.js, style.css
  */
 (function() {
   "use strict";
 
   const GRID = 20;
   const SIZE = 400;
-  let canvas, ctx;
-  let snake, direction, fruit;
-  let gameOver, isRunning, isPaused;
-  let score, gameTime;
-  let gameInterval, timerInterval;
-  let gameSpeed = 85;
-  let obstacles = [];
   const SAVE_KEY = "gameHubSnakeState";
+  const LEADERBOARD_KEY = "snakeLeaderboard";
+  const SAVE_MAX_HOURS = 24;
+
+  const STATE = { READY: "READY", RUNNING: "RUNNING", PAUSED: "PAUSED", GAME_OVER: "GAME_OVER" };
+
+  let canvas, ctx;
+  let snake, direction, fruit, obstacles;
+  let score, gameTime, highScore, gameSpeed, baseSpeed;
+  let state = STATE.READY;
+  let gameIntervalId = null;
+  let lastTickTime = 0;
+  let lastEffectiveSpeed = 0;
+  let elapsedMs = 0;
+  let comboCount = 0;
+  let comboTimeoutId = null;
+  const COMBO_DELAY_MS = 1500;
+  let powerUp = null;
+  let powerUpEndTime = 0;
+  let lastDifficultyLevel = 0;
 
   function getEl(id) { return document.getElementById(id); }
 
+  function clearAllIntervals() {
+    if (gameIntervalId !== null) {
+      clearInterval(gameIntervalId);
+      gameIntervalId = null;
+    }
+    if (comboTimeoutId !== null) {
+      clearTimeout(comboTimeoutId);
+      comboTimeoutId = null;
+    }
+  }
+
+  function setState(newState) {
+    state = newState;
+    updateStateDisplay();
+  }
+
+  function updateStateDisplay() {
+    const el = getEl("stateDisplay");
+    if (el) {
+      const labels = { READY: "מוכן", RUNNING: "משחק", PAUSED: "מושהה", GAME_OVER: "סיום" };
+      el.textContent = labels[state] || state;
+    }
+  }
+
+  function getSpeed() {
+    const sel = getEl("speedSelect");
+    if (!sel) return 85;
+    const v = parseInt(sel.value, 10);
+    return (v === 120 || v === 85 || v === 55) ? v : 85;
+  }
+
+  function spawnFruit() {
+    let x, y;
+    let attempts = 0;
+    do {
+      x = Math.floor(Math.random() * (SIZE / GRID)) * GRID;
+      y = Math.floor(Math.random() * (SIZE / GRID)) * GRID;
+      attempts++;
+    } while (
+      attempts < 100 &&
+      (snake.some(function(s) { return s.x === x && s.y === y; }) ||
+       obstacles.some(function(o) { return o.x === x && o.y === y; }))
+    );
+    const types = ["normal", "bonus", "double", "slow", "fast"];
+    const r = Math.random();
+    let type = "normal";
+    if (r < 0.15) type = "bonus";
+    else if (r < 0.22) type = "double";
+    else if (r < 0.28) type = "slow";
+    else if (r < 0.34) type = "fast";
+    return { x: x, y: y, type: type };
+  }
+
+  function isOccupied(x, y, excludeHead) {
+    const body = excludeHead ? snake.slice(1) : snake;
+    if (body.some(function(s) { return s.x === x && s.y === y; })) return true;
+    if (obstacles.some(function(o) { return o.x === x && o.y === y; })) return true;
+    if (fruit && fruit.x === x && fruit.y === y) return true;
+    return false;
+  }
+
+  function spawnObstacles(count) {
+    const obs = [];
+    const maxObs = 5 + Math.floor(score / 50);
+    const n = Math.min(count, maxObs);
+    for (let i = 0; i < n; i++) {
+      let o;
+      let attempts = 0;
+      do {
+        o = {
+          x: Math.floor(Math.random() * (SIZE / GRID)) * GRID,
+          y: Math.floor(Math.random() * (SIZE / GRID)) * GRID
+        };
+        attempts++;
+      } while (attempts < 100 && isOccupied(o.x, o.y, false));
+      obs.push(o);
+    }
+    return obs;
+  }
+
+  let lastObstacleScore = 0;
+
+  function addObstacleIfNeeded() {
+    var level = Math.floor(score / 50);
+    var currentTotal = obstacles.length;
+    var target = 5 + level;
+    if (level > lastObstacleScore && currentTotal < target) {
+      lastObstacleScore = level;
+      let o;
+      let attempts = 0;
+      do {
+        o = {
+          x: Math.floor(Math.random() * (SIZE / GRID)) * GRID,
+          y: Math.floor(Math.random() * (SIZE / GRID)) * GRID
+        };
+        attempts++;
+      } while (attempts < 100 && isOccupied(o.x, o.y, false));
+      if (attempts < 100) obstacles.push(o);
+    }
+  }
+
+  function getComboMultiplier() {
+    return 1 + Math.min(comboCount, 5);
+  }
+
+  function resetCombo() {
+    comboCount = 0;
+    if (comboTimeoutId) clearTimeout(comboTimeoutId);
+    comboTimeoutId = null;
+  }
+
+  function onEatFruit() {
+    comboCount++;
+    if (comboTimeoutId) clearTimeout(comboTimeoutId);
+    comboTimeoutId = setTimeout(resetCombo, COMBO_DELAY_MS);
+  }
+
+  function activatePowerUp(type, durationMs) {
+    powerUp = type;
+    powerUpEndTime = Date.now() + durationMs;
+  }
+
+  function updatePowerUp() {
+    if (powerUp && Date.now() >= powerUpEndTime) {
+      powerUp = null;
+    }
+  }
+
+  function getEffectiveSpeed() {
+    if (powerUp === "slow") return Math.min(gameSpeed + 40, 150);
+    if (powerUp === "fast") return Math.max(gameSpeed - 30, 35);
+    return gameSpeed;
+  }
+
+  function getScoreMultiplier() {
+    let m = 1;
+    if (powerUp === "double") m = 2;
+    return m * getComboMultiplier();
+  }
+
   function saveGameState() {
-    if (!isRunning || gameOver) return;
+    if (state !== STATE.RUNNING && state !== STATE.PAUSED) return;
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify({
-        snake: snake, direction: direction, fruit: fruit, score: score, gameTime: gameTime,
-        gameSpeed: gameSpeed, obstacles: obstacles, ts: Date.now()
+        snake: snake, direction: direction, fruit: fruit, obstacles: obstacles,
+        score: score, gameTime: gameTime, gameSpeed: gameSpeed, baseSpeed: baseSpeed,
+        state: state, ts: Date.now()
       }));
     } catch (e) {}
   }
@@ -33,7 +187,7 @@
       if (!raw) return null;
       var s = JSON.parse(raw);
       if (!s || !s.snake || !Array.isArray(s.snake) || s.snake.length < 1) return null;
-      if (Date.now() - (s.ts || 0) > 24 * 60 * 60 * 1000) return null;
+      if (Date.now() - (s.ts || 0) > SAVE_MAX_HOURS * 60 * 60 * 1000) return null;
       return s;
     } catch (e) { return null; }
   }
@@ -42,159 +196,184 @@
     try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
   }
 
-  function getSpeed() {
-    const sel = getEl("speedSelect");
-    if (!sel) return 85;
-    const v = parseInt(sel.value, 10);
-    return (v === 120 || v === 85 || v === 55) ? v : 85;
+  function loadHighScore() {
+    try {
+      var data = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
+      if (data.length) return data[0].score || 0;
+    } catch (e) {}
+    return 0;
   }
 
   function initGame(fromSave) {
+    clearAllIntervals();
+    resetCombo();
+    powerUp = null;
+    lastDifficultyLevel = 0;
+    lastObstacleScore = 0;
+
     if (fromSave) {
       var saved = loadGameState();
       if (saved) {
         snake = saved.snake;
         direction = saved.direction;
         fruit = saved.fruit;
+        obstacles = Array.isArray(saved.obstacles) ? saved.obstacles : spawnObstacles(5);
         score = saved.score || 0;
         gameTime = saved.gameTime || 0;
         gameSpeed = saved.gameSpeed || getSpeed();
-        obstacles = Array.isArray(saved.obstacles) ? saved.obstacles : spawnObstacles(5);
+        baseSpeed = saved.baseSpeed || gameSpeed;
       } else {
         fromSave = false;
       }
     }
     if (!fromSave) {
-      gameSpeed = getSpeed();
+      baseSpeed = getSpeed();
+      gameSpeed = baseSpeed;
       snake = [{ x: 200, y: 200 }];
       direction = "RIGHT";
       fruit = spawnFruit();
+      obstacles = spawnObstacles(5);
       score = 0;
       gameTime = 0;
-      obstacles = spawnObstacles(5);
+      lastDifficultyLevel = 0;
+    } else {
+      lastDifficultyLevel = Math.floor(score / 50);
+      lastObstacleScore = lastDifficultyLevel;
     }
-    gameOver = false;
-    isPaused = false;
 
+    highScore = loadHighScore();
+    if (score > highScore) highScore = score;
+
+    setState(STATE.RUNNING);
     const sel = getEl("speedSelect");
     if (sel) sel.disabled = true;
 
-    clearInterval(gameInterval);
-    clearInterval(timerInterval);
+    if (!fromSave) clearSavedState();
+    hideOverlay("startOverlay");
+    hideOverlay("pauseOverlay");
+    hideOverlay("gameOverOverlay");
+    updateUI();
+    updateBtns();
 
-    gameInterval = setInterval(loop, gameSpeed);
-    timerInterval = setInterval(function() {
-      gameTime++;
-      updateUI();
-    }, 1000);
-
-    isRunning = true;
-    clearSavedState();
-    hideStartOverlay();
-    updateBtns("running");
+    elapsedMs = 0;
+    lastEffectiveSpeed = getEffectiveSpeed();
+    gameIntervalId = setInterval(gameLoop, lastEffectiveSpeed);
   }
 
-  function stopGame(ended) {
-    clearInterval(gameInterval);
-    clearInterval(timerInterval);
-    isRunning = false;
-    isPaused = !ended;
+  function gameLoop() {
+    if (state === STATE.GAME_OVER) {
+      clearAllIntervals();
+      return;
+    }
+    if (state === STATE.PAUSED) return;
 
-    if (!ended) saveGameState();
+    var eff = getEffectiveSpeed();
+    elapsedMs += eff;
+    while (elapsedMs >= 1000) {
+      gameTime++;
+      elapsedMs -= 1000;
+    }
 
-    const overlay = getEl("startOverlay");
-    if (overlay) overlay.classList.remove("hidden");
+    updatePowerUp();
+    updateUI();
 
-    const title = getEl("overlayTitle");
-    const desc = overlay ? overlay.querySelector(".overlay-desc") : null;
-    const btnOvl = getEl("btnStartOverlay");
+    if (eff !== lastEffectiveSpeed) {
+      lastEffectiveSpeed = eff;
+      clearInterval(gameIntervalId);
+      gameIntervalId = setInterval(gameLoop, eff);
+    }
 
-    if (ended) {
-      if (title) title.textContent = "Game Over!";
-      if (desc) desc.textContent = "לחץ התחל למשחק חדש";
-      if (btnOvl) btnOvl.innerHTML = '<span>↻</span> התחל מחדש';
+    ctx.clearRect(0, 0, SIZE, SIZE);
+
+    var head = { x: snake[0].x, y: snake[0].y };
+    if (direction === "LEFT") head.x -= GRID;
+    else if (direction === "UP") head.y -= GRID;
+    else if (direction === "RIGHT") head.x += GRID;
+    else head.y += GRID;
+
+    snake.unshift(head);
+
+    if (head.x === fruit.x && head.y === fruit.y) {
+      if (typeof SOUNDS !== "undefined" && SOUNDS.eat) SOUNDS.eat();
+      var mult = getScoreMultiplier();
+      var base = fruit.type === "bonus" ? 20 : fruit.type === "double" ? 15 : fruit.type === "slow" || fruit.type === "fast" ? 25 : 10;
+      score += Math.floor(base * mult);
+      onEatFruit();
+      if (fruit.type === "double") activatePowerUp("double", 5000);
+      else if (fruit.type === "slow") activatePowerUp("slow", 4000);
+      else if (fruit.type === "fast") activatePowerUp("fast", 3000);
+      if (fruit.type === "bonus" && gameSpeed > 35) gameSpeed = Math.max(35, gameSpeed - 5);
+      var newLevel = Math.floor(score / 50);
+      if (newLevel > lastDifficultyLevel && gameSpeed > 35) {
+        lastDifficultyLevel = newLevel;
+        gameSpeed = Math.max(35, gameSpeed - 3);
+      }
+      fruit = spawnFruit();
+      addObstacleIfNeeded();
+    } else {
+      snake.pop();
+    }
+
+    snake.forEach(function(seg, i) {
+      var a = 1 - (i / snake.length) * 0.5;
+      ctx.fillStyle = "rgba(74, 222, 128, " + a + ")";
+      ctx.shadowColor = i === 0 ? "rgba(34, 197, 94, 0.5)" : "transparent";
+      ctx.shadowBlur = i === 0 ? 8 : 0;
+      ctx.fillRect(seg.x + 2, seg.y + 2, GRID - 4, GRID - 4);
+    });
+    ctx.shadowBlur = 0;
+
+    var fruitColor = "#ef4444";
+    if (fruit.type === "bonus") fruitColor = "#3b82f6";
+    else if (fruit.type === "double") fruitColor = "#a855f7";
+    else if (fruit.type === "slow") fruitColor = "#06b6d4";
+    else if (fruit.type === "fast") fruitColor = "#f59e0b";
+    ctx.fillStyle = fruitColor;
+    ctx.shadowColor = fruitColor;
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.arc(fruit.x + GRID / 2, fruit.y + GRID / 2, GRID / 2 - 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = "rgba(100, 116, 139, 0.9)";
+    obstacles.forEach(function(o) {
+      ctx.fillRect(o.x + 2, o.y + 2, GRID - 4, GRID - 4);
+    });
+
+    var collision = head.x < 0 || head.x >= SIZE || head.y < 0 || head.y >= SIZE ||
+      snake.slice(1).some(function(s) { return s.x === head.x && s.y === head.y; }) ||
+      obstacles.some(function(o) { return o.x === head.x && o.y === head.y; });
+
+    if (collision) {
+      setState(STATE.GAME_OVER);
+      clearAllIntervals();
+      drawGameOverScreen();
+      showGameOverOverlay();
       saveToLeaderboard();
       clearSavedState();
-    } else {
-      if (title) title.textContent = "המשחק הוקפא";
-      if (desc) desc.textContent = "לחץ התחל להמשך";
-      if (btnOvl) btnOvl.innerHTML = '<span>▶</span> המשך';
-      drawPausedScreen();
+      updateBtns();
+      if (typeof window.ANALYTICS !== "undefined" && window.ANALYTICS.track) {
+        try { window.ANALYTICS.track("snake_game_over", { score: score }); } catch (e) {}
+      }
+      return;
     }
 
-    updateBtns("stopped");
-    const sel = getEl("speedSelect");
-    if (sel) sel.disabled = false;
+    if (score > highScore) highScore = score;
   }
 
-  function resumeGame() {
-    isPaused = false;
-    hideStartOverlay();
-    gameInterval = setInterval(loop, gameSpeed);
-    timerInterval = setInterval(function() {
-      gameTime++;
-      updateUI();
-    }, 1000);
-    isRunning = true;
-    updateBtns("running");
-  }
-
-  function resetGame() {
-    clearInterval(gameInterval);
-    clearInterval(timerInterval);
-    isRunning = false;
-    isPaused = false;
-    clearSavedState();
-    initGame(false);
-  }
-
-  function hideStartOverlay() {
-    const ov = getEl("startOverlay");
-    if (ov) ov.classList.add("hidden");
-  }
-
-  function updateUI() {
-    const sd = getEl("scoreDisplay");
-    const td = getEl("timerDisplay");
-    if (sd) sd.textContent = "ניקוד: " + score;
-    if (td) td.textContent = "זמן: " + gameTime;
-  }
-
-  function updateBtns(state) {
-    const btn = getEl("btnStart");
-    if (!btn) return;
-    if (state === "running") {
-      btn.innerHTML = '<span>⏸</span> עצור';
-    } else {
-      btn.innerHTML = '<span>▶</span> התחל';
-    }
-  }
-
-  function spawnFruit() {
-    return {
-      x: Math.floor(Math.random() * (SIZE / GRID)) * GRID,
-      y: Math.floor(Math.random() * (SIZE / GRID)) * GRID,
-      bonus: Math.random() < 0.2
-    };
-  }
-
-  function spawnObstacles(n) {
-    const obs = [];
-    for (let i = 0; i < n; i++) {
-      let o;
-      do {
-        o = {
-          x: Math.floor(Math.random() * (SIZE / GRID)) * GRID,
-          y: Math.floor(Math.random() * (SIZE / GRID)) * GRID
-        };
-      } while (
-        (o.x === 200 && o.y === 200) ||
-        (fruit && o.x === fruit.x && o.y === fruit.y) ||
-        obs.some(function(x) { return x.x === o.x && x.y === o.y; })
-      );
-      obs.push(o);
-    }
-    return obs;
+  function drawGameOverScreen() {
+    if (!ctx) return;
+    ctx.fillStyle = "rgba(0,0,0,0.85)";
+    ctx.fillRect(0, 0, SIZE, SIZE);
+    ctx.font = "bold 28px Heebo";
+    ctx.fillStyle = "#ef4444";
+    ctx.textAlign = "center";
+    ctx.fillText("Game Over!", SIZE / 2, SIZE / 2 - 25);
+    ctx.font = "18px Heebo";
+    ctx.fillStyle = "#fff";
+    ctx.fillText("ניקוד: " + score, SIZE / 2, SIZE / 2 + 5);
+    ctx.fillText("שיא: " + highScore, SIZE / 2, SIZE / 2 + 35);
   }
 
   function drawPausedScreen() {
@@ -207,130 +386,174 @@
     ctx.fillText("המשחק הוקפא", SIZE / 2, SIZE / 2 - 10);
     ctx.font = "16px Heebo";
     ctx.fillStyle = "#94a3b8";
-    ctx.fillText("לחץ התחל להמשך", SIZE / 2, SIZE / 2 + 20);
+    ctx.fillText("לחץ המשך להמשך", SIZE / 2, SIZE / 2 + 20);
   }
 
-  function loop() {
-    if (gameOver) {
-      ctx.clearRect(0, 0, SIZE, SIZE);
-      ctx.fillStyle = "rgba(0,0,0,0.85)";
-      ctx.fillRect(0, 0, SIZE, SIZE);
-      ctx.font = "bold 28px Heebo";
-      ctx.fillStyle = "#ef4444";
-      ctx.textAlign = "center";
-      ctx.fillText("Game Over!", SIZE / 2, SIZE / 2 - 15);
-      ctx.font = "18px Heebo";
-      ctx.fillStyle = "#fff";
-      ctx.fillText("ניקוד: " + score, SIZE / 2, SIZE / 2 + 20);
-      stopGame(true);
-      return;
-    }
-
-    if (isPaused) return;
-
-    ctx.clearRect(0, 0, SIZE, SIZE);
-
-    const head = { x: snake[0].x, y: snake[0].y };
-    if (direction === "LEFT") head.x -= GRID;
-    else if (direction === "UP") head.y -= GRID;
-    else if (direction === "RIGHT") head.x += GRID;
-    else head.y += GRID;
-
-    snake.unshift(head);
-
-    if (head.x === fruit.x && head.y === fruit.y) {
-      if (typeof SOUNDS !== "undefined") SOUNDS.eat();
-      if (fruit.bonus) {
-        score += 20;
-        if (gameSpeed > 40) {
-          gameSpeed -= 5;
-          clearInterval(gameInterval);
-          gameInterval = setInterval(loop, gameSpeed);
-        }
-      } else score += 10;
-      updateUI();
-      fruit = spawnFruit();
+  function stopGame(pause) {
+    clearAllIntervals();
+    if (pause) {
+      setState(STATE.PAUSED);
+      saveGameState();
+      drawPausedScreen();
+      showOverlay("pauseOverlay");
     } else {
-      snake.pop();
+      setState(STATE.GAME_OVER);
     }
+    var sel = getEl("speedSelect");
+    if (sel) sel.disabled = false;
+    updateBtns();
+  }
 
-    snake.forEach(function(seg, i) {
-      const a = 1 - (i / snake.length) * 0.5;
-      ctx.fillStyle = "rgba(74, 222, 128, " + a + ")";
-      ctx.shadowColor = "rgba(34, 197, 94, 0.5)";
-      ctx.shadowBlur = i === 0 ? 8 : 0;
-      ctx.fillRect(seg.x + 2, seg.y + 2, GRID - 4, GRID - 4);
-    });
-    ctx.shadowBlur = 0;
+  function resumeGame() {
+    if (state !== STATE.PAUSED) return;
+    hideOverlay("pauseOverlay");
+    setState(STATE.RUNNING);
+    updateBtns();
+    lastEffectiveSpeed = getEffectiveSpeed();
+    gameIntervalId = setInterval(gameLoop, lastEffectiveSpeed);
+  }
 
-    ctx.fillStyle = fruit.bonus ? "#3b82f6" : "#ef4444";
-    ctx.shadowColor = fruit.bonus ? "#60a5fa" : "#f87171";
-    ctx.shadowBlur = 6;
-    ctx.beginPath();
-    ctx.arc(fruit.x + GRID / 2, fruit.y + GRID / 2, GRID / 2 - 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = "rgba(100, 116, 139, 0.9)";
-    obstacles.forEach(function(o) {
-      ctx.fillRect(o.x + 2, o.y + 2, GRID - 4, GRID - 4);
-    });
-
-    if (
-      head.x < 0 || head.x >= SIZE || head.y < 0 || head.y >= SIZE ||
-      snake.slice(1).some(function(s) { return s.x === head.x && s.y === head.y; }) ||
-      obstacles.some(function(o) { return o.x === head.x && o.y === head.y; })
-    ) {
-      gameOver = true;
+  function resetGame() {
+    clearAllIntervals();
+    setState(STATE.READY);
+    clearSavedState();
+    baseSpeed = getSpeed();
+    gameSpeed = baseSpeed;
+    snake = [{ x: 200, y: 200 }];
+    direction = "RIGHT";
+    fruit = spawnFruit();
+    obstacles = spawnObstacles(5);
+    score = 0;
+    gameTime = 0;
+    highScore = loadHighScore();
+    resetCombo();
+    powerUp = null;
+    lastDifficultyLevel = 0;
+    lastObstacleScore = 0;
+    var sel = getEl("speedSelect");
+    if (sel) sel.disabled = false;
+    showOverlay("startOverlay");
+    hideOverlay("pauseOverlay");
+    hideOverlay("gameOverOverlay");
+    updateUI();
+    updateBtns();
+    if (ctx) {
+      ctx.clearRect(0, 0, SIZE, SIZE);
+      snake.forEach(function(seg, i) {
+        var a = 1 - (i / (snake.length || 1)) * 0.5;
+        ctx.fillStyle = "rgba(74, 222, 128, " + a + ")";
+        ctx.fillRect(seg.x + 2, seg.y + 2, GRID - 4, GRID - 4);
+      });
+      ctx.fillStyle = "#ef4444";
+      ctx.beginPath();
+      ctx.arc(fruit.x + GRID / 2, fruit.y + GRID / 2, GRID / 2 - 2, 0, Math.PI * 2);
+      ctx.fill();
+      obstacles.forEach(function(o) {
+        ctx.fillStyle = "rgba(100, 116, 139, 0.9)";
+        ctx.fillRect(o.x + 2, o.y + 2, GRID - 4, GRID - 4);
+      });
     }
+  }
+
+  function showOverlay(id) {
+    var ov = getEl(id);
+    if (ov) ov.classList.remove("hidden");
+  }
+
+  function hideOverlay(id) {
+    var ov = getEl(id);
+    if (ov) ov.classList.add("hidden");
+  }
+
+  function showGameOverOverlay() {
+    var ov = getEl("gameOverOverlay");
+    if (ov) {
+      var scoreEl = ov.querySelector(".game-over-score");
+      var highEl = ov.querySelector(".game-over-high");
+      if (scoreEl) scoreEl.textContent = score;
+      if (highEl) highEl.textContent = highScore;
+      ov.classList.remove("hidden");
+    }
+  }
+
+  function updateUI() {
+    var sd = getEl("scoreDisplay");
+    var td = getEl("timerDisplay");
+    var hs = getEl("highScoreDisplay");
+    var lv = getEl("levelDisplay");
+    if (sd) sd.textContent = score;
+    if (td) td.textContent = gameTime;
+    if (hs) hs.textContent = highScore;
+    if (lv) {
+      var level = Math.floor(score / 50) + 1;
+      lv.textContent = level;
+    }
+    var pu = getEl("powerUpDisplay");
+    if (pu) {
+      if (powerUp) {
+        var labels = { double: "x2 ניקוד", slow: "האטה", fast: "האצה" };
+        pu.textContent = labels[powerUp] || powerUp;
+        pu.style.display = "";
+      } else pu.style.display = "none";
+    }
+    var comboEl = getEl("comboDisplay");
+    if (comboEl) {
+      if (comboCount > 1) {
+        comboEl.textContent = "x" + getComboMultiplier() + " קומבו!";
+        comboEl.style.display = "";
+      } else comboEl.style.display = "none";
+    }
+  }
+
+  function updateBtns() {
+    var btnStart = getEl("btnStart");
+    var btnStop = getEl("btnStop");
+    var btnReset = getEl("btnReset");
+    if (btnStart) {
+      if (state === STATE.RUNNING) {
+        btnStart.innerHTML = '<span>⏸</span> עצור';
+        btnStart.setAttribute("aria-label", "השהה משחק");
+      } else {
+        btnStart.innerHTML = '<span>▶</span> התחל';
+        btnStart.setAttribute("aria-label", "התחל משחק");
+      }
+    }
+    if (btnStop) btnStop.disabled = state !== STATE.RUNNING;
+    if (btnReset) btnReset.disabled = false;
   }
 
   function getLeaderboard() {
     try {
-      return JSON.parse(localStorage.getItem("snakeLeaderboard") || "[]");
+      return JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
     } catch (e) { return []; }
   }
 
   function saveToLeaderboard() {
     var data = getLeaderboard();
-    var name = (typeof window.__loggedUserName === "string") ? window.__loggedUserName : "";
+    var name = (typeof window.__loggedUserName === "string" && window.__loggedUserName) ? window.__loggedUserName : "אורח";
     data.push({ score: score, name: name });
     data.sort(function(a, b) { return (b.score || 0) - (a.score || 0); });
     data = data.slice(0, 5);
-    localStorage.setItem("snakeLeaderboard", JSON.stringify(data));
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(data));
     renderLeaderboard(data);
   }
 
   function renderLeaderboard(data) {
-    const tbody = getEl("leaderboardBody");
+    var tbody = getEl("leaderboardBody");
     if (!tbody) return;
     tbody.innerHTML = "";
-    const list = (data && data.length) ? data : [{ score: 0, name: "-" }, { score: 0, name: "-" }];
-    list.slice(0, 5).forEach(function(ent, i) {
-      const row = document.createElement("tr");
+    var list = (data && data.length) ? data : [];
+    for (var i = 0; i < 5; i++) {
+      var row = document.createElement("tr");
+      var ent = list[i] || { score: 0, name: "-" };
       row.innerHTML = "<td>" + (i + 1) + "</td><td>" + (ent.name || "-") + "</td><td>" + (ent.score || 0) + "</td>";
       tbody.appendChild(row);
-    });
-  }
-
-  function doStart() {
-    if (isPaused) resumeGame();
-    else if (!isRunning) {
-      var saved = loadGameState();
-      initGame(!!saved);
     }
   }
 
-  function doStop() {
-    if (isRunning && !isPaused) stopGame(false);
-  }
-
-  function doReset() {
-    if (!isRunning) resetGame();
-  }
-
   function changeDir(e) {
-    const k = e.keyCode || e.key;
+    if (state !== STATE.RUNNING) return;
+    var k = e.keyCode || e.key;
     if (k === 37 || k === "ArrowLeft") { if (direction !== "RIGHT") direction = "LEFT"; }
     else if (k === 38 || k === "ArrowUp") { if (direction !== "DOWN") direction = "UP"; }
     else if (k === 39 || k === "ArrowRight") { if (direction !== "LEFT") direction = "RIGHT"; }
@@ -341,10 +564,39 @@
     else if (k === 68 || k === "d") { if (direction !== "LEFT") direction = "RIGHT"; }
   }
 
+  function doStart() {
+    if (state === STATE.PAUSED) resumeGame();
+    else if (state === STATE.READY || state === STATE.GAME_OVER) {
+      var saved = loadGameState();
+      if (saved && state === STATE.READY) initGame(true);
+      else initGame(false);
+    }
+  }
+
+  function doStop() {
+    if (state === STATE.RUNNING) stopGame(true);
+  }
+
+  function doReset() {
+    resetGame();
+  }
+
   function boot() {
     window.addEventListener("beforeunload", function() {
-      if (isRunning && !isPaused && !gameOver) saveGameState();
+      if (state === STATE.RUNNING || state === STATE.PAUSED) saveGameState();
     });
+
+    document.addEventListener("touchmove", function(e) {
+      if ((state === STATE.RUNNING || state === STATE.PAUSED) && e.target.closest(".snake-card")) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    var meta = document.querySelector('meta[name="viewport"]');
+    if (meta && !meta.getAttribute("content").includes("maximum-scale")) {
+      meta.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
+    }
+
     canvas = getEl("gameCanvas");
     if (!canvas) return;
     ctx = canvas.getContext("2d");
@@ -353,36 +605,47 @@
     canvas.width = SIZE;
     canvas.height = SIZE;
 
-    const btnOverlay = getEl("btnStartOverlay");
-    const btnStart = getEl("btnStart");
-    const btnStop = getEl("btnStop");
-    const btnReset = getEl("btnReset");
+    var btnOverlay = getEl("btnStartOverlay");
+    var btnStart = getEl("btnStart");
+    var btnStop = getEl("btnStop");
+    var btnReset = getEl("btnReset");
+    var btnPauseResume = getEl("btnPauseResume");
+    var btnGameOverRestart = getEl("btnGameOverRestart");
 
     if (btnOverlay) btnOverlay.addEventListener("click", doStart);
     if (btnStart) btnStart.addEventListener("click", function() {
-      if (isPaused) resumeGame();
-      else if (!isRunning) doStart();
-      else doStop();
+      if (state === STATE.PAUSED) resumeGame();
+      else if (state === STATE.RUNNING) doStop();
+      else doStart();
     });
     if (btnStop) btnStop.addEventListener("click", doStop);
     if (btnReset) btnReset.addEventListener("click", doReset);
+    if (btnPauseResume) btnPauseResume.addEventListener("click", resumeGame);
+    if (btnGameOverRestart) btnGameOverRestart.addEventListener("click", function() {
+      hideOverlay("gameOverOverlay");
+      initGame(false);
+    });
 
     document.addEventListener("keydown", function(e) {
+      if (state === STATE.RUNNING && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].indexOf(e.key) >= 0) {
+        e.preventDefault();
+      }
       if (e.key === "Enter") {
-        if (!isRunning) doStart();
-        else if (isPaused) resumeGame();
+        if (state === STATE.READY || state === STATE.GAME_OVER) doStart();
+        else if (state === STATE.PAUSED) resumeGame();
       } else if (e.key === "r" || e.key === "R") {
-        if (!isRunning) doReset();
+        doReset();
       } else if (e.key === "p" || e.key === "P") {
-        if (isRunning && !isPaused) doStop();
-        else if (isPaused) resumeGame();
+        if (state === STATE.RUNNING) doStop();
+        else if (state === STATE.PAUSED) resumeGame();
       }
       changeDir(e);
     });
 
     document.querySelectorAll(".touch-btn").forEach(function(btn) {
       btn.addEventListener("click", function() {
-        const d = this.getAttribute("data-dir");
+        if (state !== STATE.RUNNING) return;
+        var d = this.getAttribute("data-dir");
         if (d === "UP" && direction !== "DOWN") direction = "UP";
         else if (d === "DOWN" && direction !== "UP") direction = "DOWN";
         else if (d === "LEFT" && direction !== "RIGHT") direction = "LEFT";
@@ -391,17 +654,29 @@
     });
 
     renderLeaderboard(getLeaderboard());
+    highScore = loadHighScore();
 
     var saved = loadGameState();
     var btnOvl = getEl("btnStartOverlay");
     var ov = getEl("startOverlay");
     var overlayTitle = getEl("overlayTitle");
     var overlayDesc = ov ? ov.querySelector(".overlay-desc") : null;
-    if (saved && btnOvl) {
+    if (saved && btnOvl && state === STATE.READY) {
       btnOvl.innerHTML = '<span>▶</span> המשך משחק';
       if (overlayTitle) overlayTitle.textContent = "משחק שמור";
-      if (overlayDesc) overlayDesc.textContent = "לחץ להמשך המשחק הקודם (ניקוד: " + (saved.score || 0) + ")";
+      if (overlayDesc) overlayDesc.textContent = "לחץ להמשך (ניקוד: " + (saved.score || 0) + ")";
     }
+
+    baseSpeed = getSpeed();
+    gameSpeed = baseSpeed;
+    snake = [{ x: 200, y: 200 }];
+    direction = "RIGHT";
+    fruit = spawnFruit();
+    obstacles = spawnObstacles(5);
+    score = 0;
+    gameTime = 0;
+    updateStateDisplay();
+    updateUI();
   }
 
   if (document.readyState === "loading") {
