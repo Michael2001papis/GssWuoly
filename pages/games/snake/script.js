@@ -591,7 +591,22 @@
     resetGame();
   }
 
+  var bootRetries = 0;
+  var BOOT_MAX_RETRIES = 20;
   function boot() {
+    canvas = getEl("gameCanvas");
+    if (!canvas) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", boot);
+      } else if (bootRetries < BOOT_MAX_RETRIES) {
+        bootRetries++;
+        setTimeout(boot, 50);
+      }
+      return;
+    }
+    ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     window.addEventListener("beforeunload", function() {
       if (state === STATE.RUNNING || state === STATE.PAUSED) saveGameState();
     });
@@ -606,11 +621,6 @@
     if (meta && !meta.getAttribute("content").includes("maximum-scale")) {
       meta.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
     }
-
-    canvas = getEl("gameCanvas");
-    if (!canvas) return;
-    ctx = canvas.getContext("2d");
-    if (!ctx) return;
 
     canvas.width = SIZE;
     canvas.height = SIZE;
