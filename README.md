@@ -2,11 +2,24 @@
 
 פלטפורמת משחקים מבוססת דפדפן בעברית (RTL) – איקס עיגול + נחש – עם מערכת התחברות מקומית, נגישות, PWA ותמיכה Offline חלקית.
 
+---
+
+## 👤 מי המפתח – זכויות יוצרים
+
+**מפתח ובעלים:** מיכאל פפיסמדוב (Michael Papismedov)  
+**© 2025–2026 מיכאל פפיסמדוב. כל הזכויות שמורות.**
+
+הפרויקט נבנה, עוצב ופותח במלואו על ידי מיכאל פפיסמדוב. אין להעתיק, לשכפל או להפיץ ללא אישור בכתב מהמחבר.
+
+---
+
 **חשוב:** זהו פרויקט Client-Side בלבד (Demo). אין צד שרת ואין אבטחת משתמשים "אמיתית". אין להשתמש בסיסמאות אמיתיות.
 
 ## קישורים
 
+- **מפתח:** מיכאל פפיסמדוב
 - **GitHub Repo:** https://github.com/Michael2001papis/GssWuoly.git
+- **אתר חי:** https://gss-wuoly.vercel.app/pages/home/index.html
 
 ---
 
@@ -211,5 +224,8 @@ npm run test:e2e       # Playwright (מריץ dev server אוטומטית)
 
 ## קרדיטים
 
-נבנה ופותח על ידי **מיכאל פפיסמדוב**.  
-מקור: https://github.com/Michael2001papis/GssWuoly.git
+**נבנה ופותח במלואו על ידי מיכאל פפיסמדוב (Michael Papismedov).**
+
+- מפתח: מיכאל פפיסמדוב  
+- מקור: https://github.com/Michael2001papis/GssWuoly.git  
+- אתר: https://gss-wuoly.vercel.app/pages/home/index.html

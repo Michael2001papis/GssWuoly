@@ -1,7 +1,8 @@
 {
   "name": "Game Hub - משחקייה",
   "short_name": "Game Hub",
-  "description": "פלטפורמת משחקים - איקס עיגול, נחש. התחבר, שחק וצבור נקודות.",
+  "description": "פלטפורמת משחקים - איקס עיגול, נחש. התחבר, שחק וצבור נקודות. מפתח: מיכאל פפיסמדוב. © 2025–2026 כל הזכויות שמורות.",
+  "author": "מיכאל פפיסמדוב (Michael Papismedov)",
   "start_url": "/pages/home/index.html",
   "display": "standalone",
   "orientation": "portrait-primary",
