@@ -1,5 +1,6 @@
 /**
- * תאורה ונגישות – עובד גם בלי app-common.js
+ * תאורה ונגישות – Fallback מינימלי כש-APP לא נטען
+ * מקור אמת: app-common.js. קובץ זה רק לגיבוי בדפים בודדים.
  */
 (function() {
   var THEME_KEY = "gameHubTheme";

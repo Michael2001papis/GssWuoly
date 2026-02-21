@@ -1,6 +1,7 @@
 /**
  * Service Worker - Game Hub
  * מאפשר cache בסיסי לתמיכה Offline
+ * נתיבים יחסיים ל-origin – עובד כשהאתר מוגש מ-root (Vercel)
  */
 const CACHE_NAME = "gamehub-v1";
 const ASSETS = [
@@ -12,6 +13,7 @@ const ASSETS = [
   "/pages/games/snake/index.html",
   "/css/app.css",
   "/js/auth.js",
+  "/js/analytics.js",
   "/js/app-common.js",
   "/js/standalone.js",
   "/js/toast.js",

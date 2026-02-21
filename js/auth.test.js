@@ -1,5 +1,7 @@
 /**
  * Unit tests for AUTH module
+ * הערה: auth.js נטען כ-script רגיל בדפדפן. הבדיקות משכפלות את הלוגיקה
+ * כדי לבדוק אותה – יש לשמור סנכרון עם auth.js בעדכונים.
  * Run: npm test
  */
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -12,6 +14,7 @@ const localStorageMock = {
 };
 vi.stubGlobal("localStorage", localStorageMock);
 
+// לוגיקה זהה ל-auth.js – יש לעדכן בעת שינוי auth.js
 const AUTH = {
   USERS_KEY: "gameHubUsers",
   LOGGED_KEY: "loggedInUser",
@@ -34,7 +37,7 @@ const AUTH = {
   },
   setLoggedUser(user) {
     if (user) {
-      localStorage.setItem(this.LOGGED_KEY, JSON.stringify({ name: user.name, email: user.email }));
+      localStorage.setItem(this.LOGGED_KEY, JSON.stringify({ name: user.name, email: user.email, avatar: user.avatar || "👤" }));
     } else {
       localStorage.removeItem(this.LOGGED_KEY);
     }
@@ -55,9 +58,9 @@ const AUTH = {
     if (users.some((u) => u.email === em)) {
       return { success: false, error: "אימייל זה כבר רשום. נסה להתחבר." };
     }
-    users.push({ name: name.trim(), email: em, password });
+    users.push({ name: name.trim(), email: em, password, avatar: "👤" });
     this.saveUsers(users);
-    this.setLoggedUser({ name: name.trim(), email: em });
+    this.setLoggedUser({ name: name.trim(), email: em, avatar: "👤" });
     return { success: true, isNewUser: true };
   },
   signin(email, password) {
@@ -70,7 +73,7 @@ const AUTH = {
     if (!user) {
       return { success: false, error: "אימייל או סיסמה שגויים." };
     }
-    this.setLoggedUser({ name: user.name, email: user.email });
+    this.setLoggedUser({ name: user.name, email: user.email, avatar: user.avatar || "👤" });
     return { success: true, isNewUser: false };
   },
 };
@@ -98,7 +101,7 @@ describe("AUTH", () => {
       const r = AUTH.signup("Miki", "miki@test.com", "secret123");
       expect(r.success).toBe(true);
       expect(r.isNewUser).toBe(true);
-      expect(AUTH.getLoggedUser()).toEqual({ name: "Miki", email: "miki@test.com" });
+      expect(AUTH.getLoggedUser()).toMatchObject({ name: "Miki", email: "miki@test.com" });
     });
     it("rejects short password", () => {
       const r = AUTH.signup("Miki", "m@t.com", "123");

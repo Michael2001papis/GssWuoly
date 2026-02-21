@@ -40,13 +40,9 @@ document.addEventListener("DOMContentLoaded", function() {
   const tabBtns = document.querySelectorAll(".tab-btn");
   const signinForm = document.getElementById("signin-form");
   const signupForm = document.getElementById("signup-form");
-  const signinFormEl = signinForm.querySelector("form");
-  const signupFormEl = signupForm.querySelector("form");
-  const forgotLink = document.getElementById("forgotLink");
-  const forgotModal = document.getElementById("forgotModal");
-  const closeForgot = document.getElementById("closeForgot");
-  const forgotForm = document.getElementById("forgotForm");
-  const forgotSubmitBtn = document.getElementById("forgotSubmitBtn");
+  const signinFormEl = signinForm && signinForm.querySelector("form");
+  const signupFormEl = signupForm && signupForm.querySelector("form");
+  if (!signinFormEl || !signupFormEl) return;
 
   function getReturnUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -122,97 +118,5 @@ document.addEventListener("DOMContentLoaded", function() {
     } else {
       showMsg(result.error, "error");
     }
-  });
-
-  // פתיחת חלון שכחת סיסמה
-  forgotLink.addEventListener("click", function(e) {
-    e.preventDefault();
-    forgotModal.classList.add("active");
-    forgotModal.setAttribute("aria-hidden", "false");
-    setTimeout(function() {
-      const firstInput = forgotForm.querySelector('input[type="email"]');
-      if (firstInput) firstInput.focus();
-    }, 100);
-  });
-
-  // סגירת חלון
-  function closeModal() {
-    forgotModal.classList.remove("active");
-    forgotModal.setAttribute("aria-hidden", "true");
-  }
-
-  closeForgot.addEventListener("click", closeModal);
-
-  forgotModal.addEventListener("click", function(e) {
-    if (e.target === forgotModal) closeModal();
-  });
-
-  document.addEventListener("keydown", function(e) {
-    if (e.key === "Escape" && forgotModal.classList.contains("active")) closeModal();
-  });
-
-  // שליחת טופס איפוס סיסמה - אימייל אמיתי דרך EmailJS
-  forgotForm.addEventListener("submit", function(e) {
-    e.preventDefault();
-    
-    var emailInput = forgotForm.querySelector('input[type="email"]');
-    var email = emailInput.value.trim();
-    
-    if (!email) {
-      showMsg("יש להזין כתובת אימייל.", "error");
-      return;
-    }
-
-    // בדיקה שהמשתמש הגדיר את EmailJS
-    if (typeof EMAILJS_CONFIG === "undefined" || 
-        !EMAILJS_CONFIG.publicKey || EMAILJS_CONFIG.publicKey === "YOUR_PUBLIC_KEY" ||
-        !EMAILJS_CONFIG.serviceID || EMAILJS_CONFIG.serviceID === "YOUR_SERVICE_ID" ||
-        !EMAILJS_CONFIG.templateID || EMAILJS_CONFIG.templateID === "YOUR_TEMPLATE_ID") {
-      showMsg("שליחת אימייל לא מוגדרת. ערוך את email-config.js", "error");
-      return;
-    }
-
-    // יצירת קוד איפוס בן 6 ספרות
-    var resetCode = String(Math.floor(100000 + Math.random() * 900000));
-
-    // שמירה ב-localStorage לבדיקה (תוקף 10 דקות)
-    var expiry = Date.now() + 10 * 60 * 1000;
-    try {
-      var codes = JSON.parse(localStorage.getItem("passwordResetCodes") || "{}");
-      codes[email] = { code: resetCode, expiry: expiry };
-      localStorage.setItem("passwordResetCodes", JSON.stringify(codes));
-    } catch (err) {}
-
-    // טעינה
-    forgotSubmitBtn.disabled = true;
-    forgotSubmitBtn.textContent = "שולח...";
-
-    // שליחת אימייל דרך EmailJS
-    if (typeof emailjs === "undefined") {
-      showMsg("ספריית EmailJS לא נטענה. בדוק את החיבור לאינטרנט.", "error");
-      forgotSubmitBtn.disabled = false;
-      forgotSubmitBtn.textContent = "שלח קוד איפוס";
-      return;
-    }
-
-    emailjs.init(EMAILJS_CONFIG.publicKey);
-
-    emailjs.send(EMAILJS_CONFIG.serviceID, EMAILJS_CONFIG.templateID, {
-      user_email: email,
-      reset_code: resetCode
-    })
-    .then(function() {
-      showMsg("קוד איפוס נשלח לכתובת " + email, "success");
-      closeModal();
-      forgotForm.reset();
-    })
-    .catch(function(err) {
-      console.error("EmailJS error:", err);
-      showMsg("שגיאה בשליחת האימייל. בדוק את ההגדרות ב-email-config.js", "error");
-    })
-    .finally(function() {
-      forgotSubmitBtn.disabled = false;
-      forgotSubmitBtn.textContent = "שלח קוד איפוס";
-    });
   });
 });
