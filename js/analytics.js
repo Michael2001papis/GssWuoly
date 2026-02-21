@@ -1,4 +1,8 @@
 /**
+ * © 2025–2026 מיכאל פפיסמדוב. כל הזכויות שמורות. GssWuoly (Game Hub).
+ * Source: https://github.com/Michael2001papis/GssWuoly.git | עודכן: 2025
+ */
+/**
  * Analytics helper - מוכן להטמעת Google Analytics / Plausible
  * להפעלה: הגדר window.GAMEHUB_ANALYTICS = { provider: "ga", id: "G-XXXX" } או
  *          { provider: "plausible", domain: "yoursite.com" }

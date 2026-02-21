@@ -1,4 +1,8 @@
 /**
+ * © 2025–2026 מיכאל פפיסמדוב. כל הזכויות שמורות. GssWuoly (Game Hub).
+ * Do not copy / do not redistribute.
+ */
+/**
  * עיצוב משותף: שעון, מצב בהיר/כהה, הגדרות נגישות
  */
 :root, .theme-dark {
@@ -645,4 +649,14 @@
 }
 .theme-light .back:hover {
   background: rgba(0,0,0,0.12) !important;
+}
+
+/* Footer בעלות – גלוי בכל הדפים */
+.app-copyright-footer {
+  text-align: center;
+  padding: 1rem 1.5rem;
+  color: var(--app-muted);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--app-border);
+  margin-top: 2rem;
 }

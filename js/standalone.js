@@ -1,4 +1,8 @@
 /**
+ * © 2025–2026 מיכאל פפיסמדוב. כל הזכויות שמורות. GssWuoly (Game Hub).
+ * Source: https://github.com/Michael2001papis/GssWuoly.git | עודכן: 2025
+ */
+/**
  * תאורה ונגישות – Fallback מינימלי כש-APP לא נטען
  * מקור אמת: app-common.js. קובץ זה רק לגיבוי בדפים בודדים.
  */

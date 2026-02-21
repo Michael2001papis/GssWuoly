@@ -1,4 +1,8 @@
 /**
+ * © 2025–2026 מיכאל פפיסמדוב. כל הזכויות שמורות. GssWuoly (Game Hub).
+ * Source: https://github.com/Michael2001papis/GssWuoly.git | עודכן: 2025
+ */
+/**
  * Service Worker - Game Hub
  * Network First – רענון רגיל תמיד יביא גרסה עדכנית
  * Cache רק כ-fallback כשאין אינטרנט (Offline)

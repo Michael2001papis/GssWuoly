@@ -1,10 +1,17 @@
 /**
+ * © 2025–2026 מיכאל פפיסמדוב. כל הזכויות שמורות. GssWuoly (Game Hub).
+ * Source: https://github.com/Michael2001papis/GssWuoly.git | עודכן: 2025
+ */
+/**
  * פונקציות משותפות: theme, clock, session, accessibility
  */
 const APP = {
   ACCESSIBILITY_KEY: "gameHubAccessibility",
 
   init() {
+    if (typeof console !== "undefined" && console.info) {
+      console.info("%c© 2025–2026 מיכאל פפיסמדוב. GssWuoly (Game Hub). כל הזכויות שמורות.", "font-size:11px;color:#6366f1;");
+    }
     this.applyTheme();
     this.initThemeBtn();
     this.applyAccessibility();

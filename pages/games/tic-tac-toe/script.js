@@ -1,3 +1,7 @@
+/**
+ * © 2025–2026 מיכאל פפיסמדוב. כל הזכויות שמורות. GssWuoly (Game Hub).
+ * Source: https://github.com/Michael2001papis/GssWuoly.git | עודכן: 2025
+ */
 // משתנים עיקריים
 let turn = true; // true עבור "X", false עבור "O"
 let btnClicked = 0;

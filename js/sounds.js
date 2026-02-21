@@ -1,4 +1,8 @@
 /**
+ * © 2025–2026 מיכאל פפיסמדוב. כל הזכויות שמורות. GssWuoly (Game Hub).
+ * Source: https://github.com/Michael2001papis/GssWuoly.git | עודכן: 2025
+ */
+/**
  * אפקטי סאונד - Web Audio API (ללא קבצי אודיו חיצוניים)
  */
 const SOUNDS = {

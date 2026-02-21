@@ -1,4 +1,8 @@
 /**
+ * © 2025–2026 מיכאל פפיסמדוב. כל הזכויות שמורות. GssWuoly (Game Hub).
+ * Source: https://github.com/Michael2001papis/GssWuoly.git | עודכן: 2025
+ */
+/**
  * Unit tests for AUTH module
  * הערה: auth.js נטען כ-script רגיל בדפדפן. הבדיקות משכפלות את הלוגיקה
  * כדי לבדוק אותה – יש לשמור סנכרון עם auth.js בעדכונים.
