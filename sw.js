@@ -1,9 +1,9 @@
 /**
  * Service Worker - Game Hub
- * מאפשר cache בסיסי לתמיכה Offline
- * נתיבים יחסיים ל-origin – עובד כשהאתר מוגש מ-root (Vercel)
+ * Network First – רענון רגיל תמיד יביא גרסה עדכנית
+ * Cache רק כ-fallback כשאין אינטרנט (Offline)
  */
-const CACHE_NAME = "gamehub-v1";
+const CACHE_NAME = "gamehub-v2";
 const ASSETS = [
   "/",
   "/index.html",
@@ -35,14 +35,17 @@ self.addEventListener("activate", (e) => {
   );
 });
 
+function networkFirstFallbackCache(request) {
+  return fetch(request).then((res) => {
+    if (res.ok && (request.mode === "navigate" || request.url.match(/\.(js|css|svg)$/))) {
+      const clone = res.clone();
+      caches.open(CACHE_NAME).then((c) => c.put(request, clone));
+    }
+    return res;
+  }).catch(() => caches.match(request));
+}
+
 self.addEventListener("fetch", (e) => {
   if (e.request.mode !== "navigate" && !e.request.url.match(/\.(js|css|svg|woff2?)$/)) return;
-  e.respondWith(
-    caches.match(e.request).then((r) => r || fetch(e.request).then((res) => {
-      const clone = res.clone();
-      if (res.ok && (e.request.mode === "navigate" || e.request.url.match(/\.(js|css|svg)$/)))
-        caches.open(CACHE_NAME).then((c) => c.put(e.request, clone));
-      return res;
-    }))
-  );
+  e.respondWith(networkFirstFallbackCache(e.request));
 });
