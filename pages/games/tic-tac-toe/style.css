@@ -532,6 +532,7 @@ body .app-copyright-footer {
 }
 
 @media (max-width: 600px) {
+  body { padding-top: 5.5rem; } /* מקום לטופ־בר כשהוא נשבר לשתי שורות */
   .ttt-card {
     padding: 1.5rem 1rem;
     max-width: 100%;
