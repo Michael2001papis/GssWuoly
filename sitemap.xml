@@ -1,48 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- החלף YOUR_DOMAIN בכתובת האתר לפני פריסה (לדוגמה: gsswuoly.vercel.app) -->
+<!-- דומיין: gsswuoly.vercel.app – החלף אם משתמשים בדומיין אחר -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://YOUR_DOMAIN/</loc>
+    <loc>https://gsswuoly.vercel.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
   </url>
   <url>
-    <loc>https://YOUR_DOMAIN/pages/home/</loc>
+    <loc>https://gsswuoly.vercel.app/pages/home/</loc>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
   </url>
   <url>
-    <loc>https://YOUR_DOMAIN/pages/games/tic-tac-toe/</loc>
+    <loc>https://gsswuoly.vercel.app/pages/games/tic-tac-toe/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://YOUR_DOMAIN/pages/games/snake/</loc>
+    <loc>https://gsswuoly.vercel.app/pages/games/snake/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://YOUR_DOMAIN/pages/login/</loc>
+    <loc>https://gsswuoly.vercel.app/pages/login/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://YOUR_DOMAIN/pages/about/</loc>
+    <loc>https://gsswuoly.vercel.app/pages/about/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://YOUR_DOMAIN/pages/contact/</loc>
+    <loc>https://gsswuoly.vercel.app/pages/contact/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://YOUR_DOMAIN/pages/privacy/</loc>
+    <loc>https://gsswuoly.vercel.app/pages/privacy/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://YOUR_DOMAIN/pages/terms/</loc>
+    <loc>https://gsswuoly.vercel.app/pages/terms/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>

@@ -7,12 +7,18 @@
  * Network First – רענון רגיל תמיד יביא גרסה עדכנית
  * Cache רק כ-fallback כשאין אינטרנט (Offline)
  */
-const CACHE_NAME = "gamehub-v2";
+const CACHE_NAME = "gamehub-v3";
 const ASSETS = [
   "/",
   "/index.html",
+  "/manifest.json",
   "/pages/home/index.html",
   "/pages/login/index.html",
+  "/pages/about/index.html",
+  "/pages/contact/index.html",
+  "/pages/terms/index.html",
+  "/pages/privacy/index.html",
+  "/pages/404/index.html",
   "/pages/games/tic-tac-toe/index.html",
   "/pages/games/snake/index.html",
   "/css/app.css",
@@ -41,7 +47,7 @@ self.addEventListener("activate", (e) => {
 
 function networkFirstFallbackCache(request) {
   return fetch(request).then((res) => {
-    if (res.ok && (request.mode === "navigate" || request.url.match(/\.(js|css|svg)$/))) {
+    if (res.ok && (request.mode === "navigate" || request.url.match(/\.(js|css|svg|json)$/))) {
       const clone = res.clone();
       caches.open(CACHE_NAME).then((c) => c.put(request, clone));
     }
@@ -50,6 +56,6 @@ function networkFirstFallbackCache(request) {
 }
 
 self.addEventListener("fetch", (e) => {
-  if (e.request.mode !== "navigate" && !e.request.url.match(/\.(js|css|svg|woff2?)$/)) return;
+  if (e.request.mode !== "navigate" && !e.request.url.match(/\.(js|css|svg|json|woff2?)$/)) return;
   e.respondWith(networkFirstFallbackCache(e.request));
 });
